@@ -33,9 +33,22 @@
     <SolidColorBrush x:Key="TreeViewItemSelectedBrush" Color="#094771"/>
 
     <!-- 修复AvalonDock标题栏颜色 -->
+    <!-- 调整 TitleBarTextBrush 为更亮的颜色以提高子窗口 title 可读性 -->
     <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#3C3C3C"/>
-    <SolidColorBrush x:Key="TitleBarTextBrush" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="TitleBarTextBrush" Color="#FFFFFF"/>
     <SolidColorBrush x:Key="DockingManagerBackgroundBrush" Color="#2D2D30"/>
+
+    <!-- 全局用于 Anchorable/Document 标题的文本样式（供模板引用或默认继承） -->
+    <Style x:Key="AnchorableTitleTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource TitleBarTextBrush}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <!-- 有些 AvalonDock 控件会继承 Foreground，从 LayoutAnchorableControl 设置一个默认 Foreground 提高兼容性 -->
+    <Style TargetType="{x:Type dock:LayoutAnchorableControl}">
+        <Setter Property="Foreground" Value="{DynamicResource TitleBarTextBrush}"/>
+    </Style>
 
     <!-- 修复菜单样式 -->
     <Style TargetType="Menu">
@@ -53,8 +66,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="MenuItem">
                     <Border x:Name="Border" Background="{TemplateBinding Background}" 
-                            BorderBrush="{TemplateBinding BorderBrush}" 
-                            BorderThickness="{TemplateBinding BorderThickness}">
+                            BorderThickness="0" SnapsToDevicePixels="True">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" SharedSizeGroup="Icon"/>
@@ -63,33 +75,52 @@
                                 <ColumnDefinition Width="13"/>
                             </Grid.ColumnDefinitions>
 
-                            <ContentPresenter x:Name="Icon" Grid.Column="0" 
-                                            ContentSource="Icon" Margin="6,0,6,0" 
-                                            VerticalAlignment="Center"/>
+                            <Rectangle x:Name="HoverOverlay" Fill="{DynamicResource MenuItemHoverOverlayBrush}" Opacity="0" IsHitTestVisible="False"/>
 
-                            <ContentPresenter x:Name="HeaderHost" Grid.Column="1" 
-                                            ContentSource="Header" 
-                                            RecognizesAccessKey="True" 
-                                            VerticalAlignment="Center"/>
+                            <!-- 第0列：对号区域 + Icon -->
+                            <Grid Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="18">
+                                <Viewbox Width="12" Height="12" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Canvas Width="12" Height="12">
+                                        <Path x:Name="CheckMark"
+                                              Data="M2,7 L5,10 L10,3"
+                                              Stroke="{DynamicResource PrimaryTextBrush}"
+                                              StrokeThickness="2"
+                                              StrokeStartLineCap="Round"
+                                              StrokeEndLineCap="Round"
+                                              Visibility="Collapsed"/>
+                                    </Canvas>
+                                </Viewbox>
 
-                            <TextBlock x:Name="InputGestureText" Grid.Column="2" 
-                                     Text="{TemplateBinding InputGestureText}" 
-                                     Margin="5,2,2,2" 
-                                     Foreground="{DynamicResource SecondaryTextBrush}"/>
+                                <ContentPresenter x:Name="Icon"
+                                                  ContentSource="Icon"
+                                                  Margin="6,0,6,0"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Center"/>
+                            </Grid>
 
-                            <Path x:Name="ArrowPath" Grid.Column="3" 
-                                Data="M 0 0 L 0 7 L 4 3.5 Z" 
-                                Fill="{DynamicResource PrimaryTextBrush}" 
-                                Margin="4,0,6,0" 
-                                VerticalAlignment="Center"/>
+                            <ContentPresenter x:Name="HeaderHost" Grid.Column="1"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"/>
 
-                            <Popup x:Name="Popup" Placement="Right" 
-                                 IsOpen="{TemplateBinding IsSubmenuOpen}" 
-                                 AllowsTransparency="True" Focusable="False" 
-                                 PopupAnimation="Fade">
-                                <Border Background="{DynamicResource MenuBackgroundBrush}" 
-                                      BorderBrush="{DynamicResource BorderBrush}" 
-                                      BorderThickness="1">
+                            <TextBlock x:Name="InputGestureText" Grid.Column="2"
+                                       Text="{TemplateBinding InputGestureText}"
+                                       Margin="5,2,2,2"
+                                       Foreground="{DynamicResource SecondaryTextBrush}"/>
+
+                            <Path x:Name="ArrowPath" Grid.Column="3"
+                                  Data="M 0 0 L 0 7 L 4 3.5 Z"
+                                  Fill="{DynamicResource PrimaryTextBrush}"
+                                  Margin="4,0,6,0"
+                                  VerticalAlignment="Center"/>
+                            <!-- Popup 必须放在 Grid 内容的最后 -->
+                            <Popup x:Name="Popup" Placement="Right"
+                                   IsOpen="{TemplateBinding IsSubmenuOpen}"
+                                   AllowsTransparency="True" Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{DynamicResource MenuBackgroundBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}"
+                                        BorderThickness="1">
                                     <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
                                 </Border>
                             </Popup>
@@ -129,7 +160,19 @@
 
                         <Trigger Property="IsHighlighted" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource MenuItemHoverBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource MenuItemHoverBorderBrush}"/>
+                            <Setter TargetName="Border" Property="BorderThickness" Value="1"/>
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="1"/>
                             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                        </Trigger>
+
+                        <!-- IsChecked 触发同时显示对号 -->
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="Border" Property="BorderThickness" Value="1"/>
+                            <Setter TargetName="HoverOverlay" Property="Opacity" Value="1"/>
+                            <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="CheckMark" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
 
                         <Trigger Property="IsEnabled" Value="False">
@@ -249,5 +292,9 @@
     <Style x:Key="ThemedGridSplitter" TargetType="GridSplitter">
         <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
     </Style>
+
+    <!-- 新增菜单项悬停边框和覆盖颜色 -->
+    <SolidColorBrush x:Key="MenuItemHoverBorderBrush" Color="#FF007ACC"/>
+    <SolidColorBrush x:Key="MenuItemHoverOverlayBrush" Color="#22007ACC"/>
 
 </ResourceDictionary>

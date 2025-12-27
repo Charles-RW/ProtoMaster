@@ -9,22 +9,17 @@
         Title="ProtoMaster" Height="700" Width="1200"
         Background="{DynamicResource WindowBackgroundBrush}">
     <Window.Resources>
-        <Style TargetType="MenuItem">
+        <!--<Style TargetType="MenuItem">
             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
             <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
-        </Style>
+        </Style>-->
         <Style TargetType="Separator">
             <Setter Property="Background" Value="{DynamicResource SeparatorBrush}"/>
         </Style>
         
         <!-- AvalonDock Theme Style -->
-        <Style TargetType="{x:Type dock:DockingManager}">
-            <!--<Setter Property="Theme">
-                <Setter.Value>
-                    <dock:Vs2013DarkTheme />
-                </Setter.Value>
-            </Setter>-->
-        </Style>
+        <!--<Style TargetType="{x:Type dock:DockingManager}">
+        </Style>-->
     </Window.Resources>
     
     <Grid>
