@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "driving.proto";
+import "parking.proto";
+import "icc.proto";
+
+
+package zark.adas;
+
+message adasInfo {
+	optional zark.driving.drivingInfo driving_info = 1; //行车数据	
+	optional zark.parking.parkingInfo parking_info = 2; //泊车数据
+	optional zark.sd_map.sdMapInfo sdMap_info = 3; //地图埋点数据
+}

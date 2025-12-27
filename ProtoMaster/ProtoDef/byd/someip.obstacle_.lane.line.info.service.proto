@@ -1,0 +1,200 @@
+/**
+ * Copyright (c) 2023- ThunderSoft
+ * All Rights Reserved by Thunder Software Technology Co., Ltd and its
+ * affiliates. You may not use, copy, distribute, modify, transmit in any form
+ * this file except in compliance with ThunderSoft in writing by applicable law.
+ */
+
+syntax = "proto3";
+
+package someip.obstacle_.lane.line.info.service;
+
+// struct Object
+message Object {
+    uint32 ObstacleType = 1;
+    double confidence = 2;
+    uint32 Obstacle_Id_i = 3;
+    double ObstacleDistance_X_i = 4;
+    double ObstacleDistance_Y_i = 5;
+    double ObstacleDistance_Z_i = 6;
+    float Bounding_box_length_i = 7;
+    float Bounding_box_width_i = 8;
+    float Bounding_box_height_i = 9;
+    uint32 break_light = 10;
+    uint32 indicator_light = 11;
+    double obj_speed = 12;
+    uint32 ObstacleState = 13;
+    double obstacle_timestamp = 14;
+    double obstacle_camera_timestamp = 15;
+    bool moving = 16;
+    double obj_heading = 17;
+    double Obj_direction = 18;
+    uint32 ObstacleWarningBrakeState = 19;
+}
+
+// struct ObstacleInfoNotifyStruct
+message ObstacleInfoNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    bool target_flag = 3;
+    repeated Object ObjectArray = 4;
+}
+
+// event ObstacleInfoNotify
+message ObstacleInfoNotify {
+    ObstacleInfoNotifyStruct ObstacleInfoNotifyStruct = 1;
+}
+
+// struct Line
+message Line {
+    int32 LineID = 1;
+    uint32 LineType = 2;
+    uint32 LineColor = 3;
+    float LineWidth = 4;
+    double Line_confidence = 5;
+    float CurvatureEquation_c0 = 6;
+    float CurvatureEquation_c1 = 7;
+    float CurvatureEquation_c2 = 8;
+    float CurvatureEquation_c3 = 9;
+    float Line_Startpoint_x = 10;
+    float Line_Startpoint_y = 11;
+    float Line_Startpoint_z = 12;
+    float Line_Endpoint_x = 13;
+    float Line_Endpoint_y = 14;
+    float Line_Endpoint_z = 15;
+    double sys_time_us = 16;
+}
+
+// struct RoadMarking
+message RoadMarking {
+    uint32 RoadMarkingID_i = 1;
+    uint32 RoadMarkingType_i = 2;
+    double RoadMarkingType_confidence_i = 3;
+    float RoadMarking_length_i = 4;
+    float RoadMarking_width_i = 5;
+    float RoadMarking_height_i = 6;
+    double RoadMarking_Distance_X_i = 7;
+    double RoadMarking_Distance_Y_i = 8;
+    double RoadMarking_Distance_Z_i = 9;
+    double RoadMarkingPosition_confidence = 10;
+}
+
+// struct TLA
+message TLA {
+    uint32 TLAID_i = 1;
+    double TLA_Distance_X = 2;
+    double TLA_Distance_Y = 3;
+    double TLA_Distance_Z = 4;
+    double TLAPosition_confidence = 5;
+    uint32 LeftTLA_Color = 6;
+    uint32 LeftTLA_Type = 7;
+    uint32 StraightTLA_Color = 8;
+    uint32 StraightTLA_Type = 9;
+    uint32 RightTLA_Color = 10;
+    uint32 RightTLA_Type = 11;
+}
+
+// struct LaneLineDataNotifyStruct
+message LaneLineDataNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    repeated Line LineArray = 3;
+    repeated RoadMarking RoadMarkingArray = 4;
+    repeated TLA TLAArray = 5;
+}
+
+// event LaneLineDataNotify
+message LaneLineDataNotify {
+    LaneLineDataNotifyStruct LaneLineDataNotifyStruct = 1;
+}
+
+// struct NewLinePoint
+message NewLinePoint {
+    uint32 New_LinePointsID_i = 1;
+    double New_LinePoints_X = 2;
+    double New_LinePoints_Y = 3;
+    double New_LinePoints_Z = 4;
+}
+
+// struct NewLine
+message NewLine {
+    int32 New_LineID = 1;
+    int32 LineID = 2;
+    uint32 LineType = 3;
+    uint32 New_LineWarningColor = 4;
+    uint32 LineColor = 5;
+    float LineWidth = 6;
+    double Line_confidence = 7;
+    float CurvatureEquation_c0 = 8;
+    float CurvatureEquation_c1 = 9;
+    float CurvatureEquation_c2 = 10;
+    float CurvatureEquation_c3 = 11;
+    float Line_Startpoint_x = 12;
+    float Line_Startpoint_y = 13;
+    float Line_Startpoint_z = 14;
+    float Line_Endpoint_x = 15;
+    float Line_Endpoint_y = 16;
+    float Line_Endpoint_z = 17;
+    repeated NewLinePoint NewLinePointArray = 18;
+    double sys_time_us = 19;
+    double LineI_Reserved1 = 20;
+    double LineI_Reserved2 = 21;
+    double LineI_Reserved3 = 22;
+    double LineI_Reserved4 = 23;
+    double LineI_Reserved5 = 24;
+}
+
+// struct NewTLA
+message NewTLA {
+    uint32 TLAID_i = 1;
+    double TLA_Distance_X = 2;
+    double TLA_Distance_Y = 3;
+    double TLA_Distance_Z = 4;
+    double TLAPosition_confidence = 5;
+    uint32 LeftTLA_Color = 6;
+    uint32 LeftTLA_Type = 7;
+    uint32 StraightTLA_Color = 8;
+    uint32 StraightTLA_Type = 9;
+    uint32 RightTLA_Color = 10;
+    uint32 RightTLA_Type = 11;
+    uint32 New_LeftTLA_Second = 12;
+    uint32 New_StraightTLA_Second = 13;
+    uint32 New_RightTLA_Second = 14;
+    double TLA_Reserved1 = 15;
+    double TLA_Reserved2 = 16;
+    double TLA_Reserved3 = 17;
+    double TLA_Reserved4 = 18;
+    double TLA_Reserved5 = 19;
+}
+
+// struct TSR
+message TSR {
+    uint32 New_TSRID_i = 1;
+    double New_TSR_Distance_X = 2;
+    double New_TSR_Distance_Y = 3;
+    double New_TSR_Distance_Z = 4;
+    double New_TSRPosition_confidence = 5;
+    uint32 New_TSR_Type = 6;
+    uint32 New_Speed_Limit = 7;
+    double TSR_Reserved1 = 8;
+    double TSR_Reserved2 = 9;
+    double TSR_Reserved3 = 10;
+    double TSR_Reserved4 = 11;
+    double TSR_Reserved5 = 12;
+}
+
+// struct NewLanelineDataNotifyStruct
+message NewLanelineDataNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    repeated NewLine NewLineArray = 3;
+    repeated NewTLA NewTLAArray = 4;
+    repeated TSR TSRArray = 5;
+}
+
+// event NewLaneLineDataNotify
+message NewLaneLineDataNotify {
+    NewLanelineDataNotifyStruct NewLanelineDataNotifyStruct = 1;
+}
+
+

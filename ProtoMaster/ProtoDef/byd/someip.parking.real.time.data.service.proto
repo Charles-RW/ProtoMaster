@@ -1,0 +1,292 @@
+/**
+ * Copyright (c) 2025- ThunderSoft
+ * All Rights Reserved by Thunder Software Technology Co., Ltd and its
+ * affiliates. You may not use, copy, distribute, modify, transmit in any form
+ * this file except in compliance with ThunderSoft in writing by applicable law.
+ */
+
+syntax = "proto3";
+
+package someip.parking.real.time.data.service;
+
+// struct Object
+message Object {
+    uint64 ObjectID_i = 1;
+    double shape_height_i = 2;
+    double shape_length_i = 3;
+    double shape_width_i = 4;
+    double position_x_i = 5;
+    double position_y_i = 6;
+    double position_z_i = 7;
+    float Heading_i = 8;
+    uint32 TypeInfo = 9;
+    uint32 CrashRisk = 10;
+}
+
+// struct ParkingObjectInfoNotify
+message ParkingObjectInfoNotify {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    double timestamp = 3;
+    repeated Object ObjectArray = 4;
+}
+
+// struct ParkingSlot
+message ParkingSlot {
+    uint32 ParkngSpcID_i = 1;
+    uint32 ParkngSpcSts = 2;
+    uint32 ParkngSpcCode_i = 3;
+    float x1_i = 4;
+    float y1_i = 5;
+    float x2_i = 6;
+    float y2_i = 7;
+    float x3_i = 8;
+    float y3_i = 9;
+    float x4_i = 10;
+    float y4_i = 11;
+}
+
+// struct EgoPoseInfo
+message EgoPoseInfo {
+    double Position_x = 1;
+    double Position_y = 2;
+    double Position_z = 3;
+    double Roll = 4;
+    double Yaw = 5;
+    double Pitch = 6;
+}
+
+// struct RealTimeTrackPoint
+message RealTimeTrackPoint {
+    uint32 RealTimeTrackPointID_i = 1;
+    double x_i = 2;
+    double y_i = 3;
+    double heading_i = 4;
+}
+
+// struct GuideLineInfo
+message GuideLineInfo {
+    repeated RealTimeTrackPoint RealTimeTrackPointArray = 1;
+}
+
+// struct HistoryTrackPoint
+message HistoryTrackPoint {
+    uint32 HistoryTrackPointID_i = 1;
+    double x_i = 2;
+    double y_i = 3;
+    double z_i = 4;
+    uint32 Width_Learning = 5;
+}
+
+// struct TrajectoryInfo
+message TrajectoryInfo {
+    repeated HistoryTrackPoint HistoryTrackPointArray = 1;
+}
+
+// struct ParkingStaticInfo
+message ParkingStaticInfo {
+    float Parking_distance_left = 1;
+    float Cruising_distance_left = 2;
+    float Learning_distance = 3;
+    uint32 PathVeriRate = 4;
+    uint32 Avoid_pedestrians_number = 5;
+    uint32 Avoid_vehicles_number = 6;
+    uint32 PathLearnFailDisp = 7;
+    uint32 SpeedBumpNumber = 8;
+}
+
+// struct ParkingRealTimeDataNotifyStruct
+message ParkingRealTimeDataNotifyStruct {
+    ParkingObjectInfoNotify ParkingObjectInfoNotify = 1;
+    repeated ParkingSlot ParkingSlotInfoNotify = 2;
+    EgoPoseInfo EgoPoseInfo = 3;
+    GuideLineInfo GuideLineInfo = 4;
+    TrajectoryInfo TrajectoryInfo = 5;
+    ParkingStaticInfo ParkingStaticInfo = 6;
+}
+
+// event ParkingRealTimeDataNotify
+message ParkingRealTimeDataNotify {
+    ParkingRealTimeDataNotifyStruct ParkingRealTimeDataNotifyStruct = 1;
+}
+
+// struct AVPTargetSlotInfo
+message AVPTargetSlotInfo {
+    uint32 AVPTargetSlotID = 1;
+    uint32 ParkngType = 2;
+    float AVPSlot_x1 = 3;
+    float AVPSlot_y1 = 4;
+    float AVPSlot_x2 = 5;
+    float AVPSlot_y2 = 6;
+    float AVPSlot_x3 = 7;
+    float AVPSlot_y3 = 8;
+    float AVPSlot_x4 = 9;
+    float AVPSlot_y4 = 10;
+}
+
+// struct AVPGlobalData
+message AVPGlobalData {
+    uint32 GlobalTrackPointID_i = 1;
+    float x_i = 2;
+    float y_i = 3;
+    float z_i = 4;
+    float Width = 5;
+}
+
+// struct AVPTargetSlotInfoNotifyStruct
+message AVPTargetSlotInfoNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    double timestamp = 3;
+    AVPTargetSlotInfo AVPTargetSlotInfo = 4;
+    uint32 MapID = 5;
+    repeated AVPGlobalData AVPGlobalDataArray = 6;
+}
+
+// field AVPTargetSlotInfoNotify
+message AVPTargetSlotInfoNotify {
+    AVPTargetSlotInfoNotifyStruct output = 1;
+}
+
+// struct NewObject
+message NewObject {
+    uint64 ObjectID_i = 1;
+    double shape_height_i = 2;
+    double shape_length_i = 3;
+    double shape_width_i = 4;
+    double position_x_i = 5;
+    double position_y_i = 6;
+    double position_z_i = 7;
+    float Heading_i = 8;
+    uint32 TypeInfo = 9;
+    uint32 CrashRisk = 10;
+    uint32 NewMoveST = 11;
+    uint32 NewAbsoluteVelocity = 12;
+    uint32 NewTurnSignalLampSt = 13;
+    uint32 NewHighLowBeamLampsSt = 14;
+    uint32 NewBrakeLightSt = 15;
+    uint32 NewReversingLightSt = 16;
+    double parkingObjectTypeInfo = 17;
+    double blockingBarStatus = 18;
+    double blockingBarTypeInfo = 19;
+    double blockingBarDirInfo = 20;
+    double fAVPMappingID = 21;
+}
+
+// struct NewParkingObjectInfoNotify
+message NewParkingObjectInfoNotify {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    double timestamp = 3;
+    repeated NewObject NewObjectArray = 4;
+}
+
+// struct NewParkingSlot
+message NewParkingSlot {
+    uint32 ParkngSpcID_i = 1;
+    uint32 ParkngSpcSts = 2;
+    uint32 ParkngSpcCode_i = 3;
+    float x1_i = 4;
+    float y1_i = 5;
+    float x2_i = 6;
+    float y2_i = 7;
+    float x3_i = 8;
+    float y3_i = 9;
+    float x4_i = 10;
+    float y4_i = 11;
+    uint32 ParkngSpcType = 12;
+    uint64 ParkngSpcNum = 13;
+    uint32 E4CornerMark = 14;
+    double parkngSlotNumber = 15;
+    double adsToPadDiySpacDisp = 16;
+    double ParkingSlotInfo_Reserved3 = 17;
+    double ParkingSlotInfo_Reserved4 = 18;
+    double ParkingSlotInfo_Reserved5 = 19;
+}
+
+// struct NewEgoPoseInfo
+message NewEgoPoseInfo {
+    double Position_x = 1;
+    double Position_y = 2;
+    double Position_z = 3;
+    double Roll = 4;
+    double Yaw = 5;
+    double Pitch = 6;
+}
+
+// struct NewTrackPoint
+message NewTrackPoint {
+    uint32 RealTimeTrackPointID_i = 1;
+    double x_i = 2;
+    double y_i = 3;
+    double heading_i = 4;
+    double stopLine = 5;
+    double segment = 6;
+    double GuideLineInfo_Reserved3 = 7;
+    double GuideLineInfo_Reserved4 = 8;
+    double GuideLineInfo_Reserved5 = 9;
+}
+
+// struct NewGuideLineInfo
+message NewGuideLineInfo {
+    repeated NewTrackPoint NewTrackPointArray = 1;
+}
+
+// struct NewHisTrackPoint
+message NewHisTrackPoint {
+    uint32 HistoryTrackPointID_i = 1;
+    double x_i = 2;
+    double y_i = 3;
+    double z_i = 4;
+    uint32 Width_Learning = 5;
+    double cruiseHistoryTrackPointID_i = 6;
+    double cruiseHistoryX = 7;
+    double cruiseHistoryY = 8;
+    double cruiseHistoryZ = 9;
+    double parkinglotLevel = 10;
+}
+
+// struct NewTrajectoryInfo
+message NewTrajectoryInfo {
+    repeated NewHisTrackPoint NewHisTrackPointArray = 1;
+}
+
+// struct NewParkingStaticInfo
+message NewParkingStaticInfo {
+    float Parking_distance_left = 1;
+    float Cruising_distance_left = 2;
+    float Learning_distance = 3;
+    uint32 PathVeriRate = 4;
+    uint32 Avoid_pedestrians_number = 5;
+    uint32 Avoid_vehicles_number = 6;
+    uint32 PathLearnFailDisp = 7;
+    uint32 Speed_Bump_Number = 8;
+}
+
+// struct ParkingRealTimeData_Reserved
+message ParkingRealTimeData_Reserved {
+    double NRPX1NoPassing = 1;
+    double NRPY1NoPassing = 2;
+    double NRPX2NoPassing = 3;
+    double NRPY2NoPassing = 4;
+    double ParkingRealTimeData_Reserved5 = 5;
+}
+
+// struct NewParkingRealTimeDataNotifyStruct
+message NewParkingRealTimeDataNotifyStruct {
+    NewParkingObjectInfoNotify NewParkingObjectInfoNotify = 1;
+    repeated NewParkingSlot NewParkingSlotInfoNotify = 2;
+    NewEgoPoseInfo NewEgoPoseInfo = 3;
+    NewGuideLineInfo NewGuideLineInfo = 4;
+    NewTrajectoryInfo NewTrajectoryInfo = 5;
+    NewParkingStaticInfo NewParkingStaticInfo = 6;
+    uint32 NewViewAngleReq = 7;
+    ParkingRealTimeData_Reserved ParkingRealTimeData_Reserved = 8;
+}
+
+// event NewParkingRealTimeDataNotify
+message NewParkingRealTimeDataNotify {
+    NewParkingRealTimeDataNotifyStruct NewParkingRealTimeDataNotifyStruct = 1;
+}
+
+

@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="BenchmarkSuite1/BenchmarkSuite1.csproj" />
+  <Project Path="ProtoMaster.CodeGen/ProtoMaster.CodeGen.csproj" Id="30bed42d-268d-4bd9-85a0-326fd09bf6c1" />
+  <Project Path="ProtoMaster.Common/ProtoMaster.Common.csproj" Id="650b0aca-02e3-485d-a6bc-906e5d9e7f6a" />
+  <Project Path="ProtoMaster.Plugin.E01/ProtoMaster.Plugin.E01.csproj" Id="81bb205c-45a0-4efc-975d-1a72b61ba28d" />
+  <Project Path="ProtoMaster/ProtoMaster.csproj" />
+</Solution>

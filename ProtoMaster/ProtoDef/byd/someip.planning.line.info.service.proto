@@ -1,0 +1,83 @@
+/**
+ * Copyright (c) 2024- ThunderSoft
+ * All Rights Reserved by Thunder Software Technology Co., Ltd and its
+ * affiliates. You may not use, copy, distribute, modify, transmit in any form
+ * this file except in compliance with ThunderSoft in writing by applicable law.
+ */
+
+syntax = "proto3";
+
+package someip.planning.line.info.service;
+
+// struct PlanningLinePoints
+message PlanningLinePoints {
+    uint32 PlanningLinePointsID_i = 1;
+    double points_X = 2;
+    double points_Y = 3;
+    double points_Z = 4;
+}
+
+// struct PlanningLineInfoNotifyStruct
+message PlanningLineInfoNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    bool PlanningLineStatus = 3;
+    double planning_timestamp = 4;
+    repeated PlanningLinePoints PlanningLinePointsArray = 5;
+}
+
+// event PlanningLineInfoNotify
+message PlanningLineInfoNotify {
+    PlanningLineInfoNotifyStruct PlanningLineInfoNotifyStruct = 1;
+}
+
+// struct navPlanningLinePoint
+message navPlanningLinePoint {
+    uint32 navPlanningLinePointsID = 1;
+    double navPointsX = 2;
+    double navPointsY = 3;
+    double navPointsZ = 4;
+}
+
+// struct newPlanningLineInfo
+message newPlanningLineInfo {
+    uint32 checksum = 1;
+    uint32 counter = 2;
+    bool planningLineStatus = 3;
+    double planningTimestamp = 4;
+    repeated PlanningLinePoints PlanningLinePointsArray = 5;
+    double accelerationDeceleration = 6;
+    bool navigationPlanningLineStatus = 7;
+    double navigationPlanningTimestamp = 8;
+    repeated navPlanningLinePoint navPlanningLinePointArray = 9;
+    bytes reserve1 = 10;
+    repeated uint32 reserve2 = 11;
+    repeated uint32 reserve3 = 12;
+    repeated double reserve4 = 13;
+    repeated float reserve5 = 14;
+}
+
+// event NewPlanningLineInfoNotify
+message NewPlanningLineInfoNotify {
+    newPlanningLineInfo newPlanningLineInfo = 1;
+}
+
+// struct drivingAreaIdentification
+message drivingAreaIdentification {
+    uint32 checksum = 1;
+    uint32 counter = 2;
+    bool drivingAreaIdentificationStatus = 3;
+    bytes drivingAreaIdentificationPointsArray = 4;
+    bytes reserve1 = 5;
+    repeated uint32 reserve2 = 6;
+    repeated uint32 reserve3 = 7;
+    repeated double reserve4 = 8;
+    repeated float reserve5 = 9;
+}
+
+// event DrivingAreaIdentificationNotify
+message DrivingAreaIdentificationNotify {
+    drivingAreaIdentification drivingAreaIdentification = 1;
+}
+
+

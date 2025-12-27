@@ -1,0 +1,927 @@
+syntax = "proto3";
+
+package zark.parking;
+
+//泊车子功能汇总信息
+message ADAS_strt_ParkingGenaralInfo
+{
+	optional uint32 ParkingActiveSubFuncSt =1 ; //泊车子功能激活状态 0x0:No Request 0x1:APA on 0x2:RPA on 0x3:HPA  on 0x4:VPA on 0x5:MRA on
+	optional uint32 ParkingQuitInd =2; //泊车退出提示
+	optional uint32 ParkingDriOperateInd = 3; //驾驶员操作提示
+
+	/**
+	 * 0x0: No Request
+	 * 0x1: Req_Recover_Press_ Resume Switch
+	 * 0x2: Req_Recover_PassengerDoor_Open
+	 * 0x3: Req_Recover_Found Obstacle In Trajectory
+	 * 0x4: Req_Recover_Phone out of range
+	 * 0x5: Req_Recover_Key out of range
+	 * 0x6: Req_Recover_Pedestrain In Trajectory
+	 * 0x7: Req_Recover_Vehicle standstill overtime
+	 * 0x8: Req_Recover_External Mirror_Open
+	 * 0x9: Req_Recover_Trunk_Open
+	 * 0xA: Req_Recover_Seat belt_Unbuckled
+	 * 0xB: Req_Recover_Camera blocked
+	 * 0xC: Req_Brake_And_ Resume
+	 * 0xD: Req_Recover_Hood_Open
+	 */
+	optional uint32 ParkingPauseInd =4 ; //泊车暂停提示
+
+	optional uint32 ParkingFailureReasonInd =5 ; //泊车故障原因 0x0: None 0x1: External ECU failure 0x2: PAS failure
+	optional uint32 ParkingVoiceRemind =6 ; //泊车语音提示
+	optional uint32 ADAS_ParkingScreen_ctrl =7; //APA大屏界面显示信号
+	optional uint32 APAFucButtonSts = 8; //APA功能按钮显示状态 //0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 HPAFucButtonSts = 9; //HPA功能按钮显示状态 //0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 MRAFucButtonSts = 10; //MRA功能按钮显示状态 //0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 FreeParkFucButtonSts =11; //自定义泊车功能按钮显示状态 //0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 ParkingLotButtonSts =12 ; //收藏停车场图标显示状态 //0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 RoadClassReq =13 ; //获取道路等级请求 //0x0: not availale 0x1: available
+	optional uint32 RPASet =14 ; //遥控泊车设置项 0x0: None 0x1: ON 0x2: Off 0x3: reserved
+	optional uint32 ParkingSpeedSet =15 ; //泊车车速控制设置项 0x0: None 0x1: SpeedSlow 0x2: SpeedNormal 0x3: SpeedFast
+	optional uint32 HPACrusingSpeedSet =16 ; //泊车巡航车速控制设置项 0x0: None 0x1: SpeedSlow 0x2: SpeedNormal 0x3: SpeedFast
+
+	/**
+	 * 0x0: None
+	 * 0x1: ParkingchimeVoice1
+	 * 0x2: ParkingchimeVoice2
+	 * 0x3: ParkingchimeVoice3
+	 * 0x4: ParkingchimeVoice4
+	 * 0x5: ParkingchimeVoice5
+	 * 0x6: ParkingchimeVoice6
+	 * 0x7: ParkingchimeVoice7
+	 * 0x8: ParkingchimeVoice8
+	 */
+	optional uint32 ParkingChimeVoice =17 ; //泊车提示音
+
+	optional uint32 AMAPSts =18 ; //加速踏板防误踩状态机信息 0x0: OFF 0x1 : Passive 0x2: Standby 0x3: Active 0x4 : Failure
+}
+
+//车位顶点
+message ADAS_strt_HPAVPAPathInfo {
+	optional float Coordinate_X =1; //X坐标
+	optional float Coordinate_Y =2; //Y坐标
+	optional float Coordinate_Z =3; //Z坐标
+}
+
+//轮挡信息
+message ADAS_strt_WheelStopInfo {
+	optional ADAS_strt_SlotPoint StartPoint =1; //轮挡端点1
+	optional ADAS_strt_SlotPoint EndPoint=2; //轮挡端点2
+	optional int32 width=3; //轮挡宽度(cm)
+}
+
+//轮挡信息
+message ADAS_strt_SlotWheelStopperInfo {
+	optional uint32 wheel_stopper =1; //轮挡是否存在 0x0: Not Active 0x1: No wheel stopper 0x2: Has wheel stopper
+	optional ADAS_strt_WheelStopInfo stopInfo =2; //轮挡信息
+}
+
+//车位感知信息
+message ADAS_strt_ParkingSlot
+{
+	optional uint32 SlotID = 1; //车位ID
+	optional uint32 SlotType = 2; //车位类型 0:未定义 1: 水平 2:垂直 3：斜列
+
+	/**
+	 * 0x0: Unknown
+	 * 0x1: Empty
+	 * 0x2: Occupied
+	 * 0x3: Parkable
+	 * 0x4: Target   （被选中了）
+	 * 0x5: Narrow Target Slot （被选中的窄车位）   记忆泊车默认就是车尾泊入
+	 * 0x6: Occupied Target Slot
+	 * 0x7: Regional Target Slot
+	 * 0x8: Regional Occupied Target  Slot
+	 */
+	optional uint32 SlotStatus = 3;//车位状态
+
+	optional ADAS_strt_HPAVPAPathInfo SlotPointTop1 = 4; //车位顶点1
+	optional ADAS_strt_HPAVPAPathInfo SlotPointTop2 = 5; //车位顶点2
+	optional ADAS_strt_HPAVPAPathInfo SlotPointBottom1 = 6; //车位顶点3
+	optional ADAS_strt_HPAVPAPathInfo SlotPointBottom2 = 7; //车位顶点4
+	optional uint32 SlotNum = 8; //车位序号
+
+	/**
+	 * 0x0: None
+	 * 0x1: L1 Floor
+	 * 0x2: G1 Floor
+	 * 0x3: L2 Floor
+	 * 0x4: G2 Floor
+	 * 0x5: L3 Floor
+	 * 0x6: G3 Floor
+	 * 0x7: L4 Floor
+	 * 0x8: G4 Floor
+	 * 0x9: L5 Floor
+	 * 0x10: G5 Floor
+	 */
+	optional uint32 SlotFloor = 9; //车位楼层
+
+	optional ADAS_strt_SlotWheelStopperInfo SlotWheelStopperInfo = 10;//轮挡信息
+}
+
+//车位感知信息数组
+message ADAS_arr_HPAParkingSlot
+{
+	repeated ADAS_strt_ParkingSlot parking_slot = 1;
+}
+
+//规划轨迹
+message ADAS_strt_TrajectoryPoint {
+	optional float Coordinate_X =1;	//X坐标
+	optional float Coordinate_Y =2;	//Y坐标
+	optional float Coordinate_Z =3; //Z坐标
+}
+
+//泊车位姿信息
+message ADAS_strt_EgoPose {
+	optional float EgoVehPoseX =1; //自车位置坐标
+	optional float EgoVehPoseY =2; //自车位置坐标
+	optional float EgoVehPoseZ =3; //自车位置坐标
+	optional float EgoVehYaw =4; //自车位姿
+	optional float EgoVehPitch =5; //自车位姿
+	optional float EgoVehRoll =6; //自车位姿
+}
+
+//泊入目标车位信息
+message ADAS_strt_ApaTargetSlotInfo {
+	optional ADAS_strt_TrajectoryPoint TargetSlotPoint0Top1 =1; //车位顶点1
+	optional ADAS_strt_TrajectoryPoint TargetSlotPoint1Top2 =2; //车位顶点2
+	optional ADAS_strt_TrajectoryPoint TargetSlotPoint2Bottom1 =3; //车位顶点3
+	optional ADAS_strt_TrajectoryPoint TargetSlotPoint3Bottom2 =4; //车位顶点4
+	optional uint32 TargetSlotType =5; //车位类型 0x0: No Park 0x1: Parallel 0x2: Cross 0x3: Diagonal
+	optional uint32 TargetSlotAvailableParkInType =6; //车位可用泊入类型 0x0: None 0x1: Head in 0x2: Back in 0x3: Head in and Back in
+	optional ADAS_strt_SlotWheelStopperInfo SlotWheelStopperInfo =7; //轮挡信息
+}
+
+//APA RPA功能输出信息
+message ADAS_strt_APARPAInfo
+{
+	optional uint32 ApaOperationResp =1; //APARPA按键状态反馈 0x0: No Response 0x1: Succeed 0x2: Failed
+	optional uint32  ApaRpaSts =2; //APARPA状态机信息
+	optional uint32  ParkingTypeSelectFb =3; //泊入泊出方式选择反馈 0x0: No Selection 0x1: PIC（parking in control）0x2: POC（parking out control）0x3: Free PIC
+	optional uint32 ParkinDirectionSts =4; //泊入方向状态反馈 0x0: None 0x1: Head in 0x2: Back in
+	optional uint32 FreeParkSlotAvaSts =5; //自由泊入车位可用性状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 ParkOutDirectionSt = 6; //泊出方向状态
+	optional uint32 POCFLParallelSts =7; //左前平行泊出位置可用性 0x0: invalid 0x1: valid
+	optional uint32 POCFLCorssSts =8; //左前垂直泊出位置可用性 0x0: invalid 0x1: valid
+	optional uint32 POCFRParallelSts =9; //右前平行泊出位置可用性 0x0: invalid 0x1: valid
+	optional uint32 POCFRCrossSts =10; //右前垂直泊出位置可用性 0x0: invalid 0x1: valid
+	optional uint32 POCFrontCrossSts =11; //前方垂直泊出位置可用性 0x0: invalid 0x1: valid
+	optional uint32 POCRearCrossSts =12; //后方垂直泊出位置可用性 0x0: invalid 0x1: valid
+	optional uint32 POCRLCrossSts =13; //左后方垂直泊出位置可用性0x0: invalid 0x1: valid
+	optional uint32 POCRRCrossSts =14; //右后方垂直泊出位置可用性 0x0: invalid 0x1: valid
+
+	/**
+	 * 0x0: No Active 
+	 * 0x1: Automatic cross park in 
+	 * 0x2: Automatic Parallel Park in 
+	 * 0x3: Automatic crossl park out 
+	 * 0x4: Automatic parallel park out 
+	 * 0x5: Remote cross park in
+	 * 0x6: Remote parallel park in 
+	 * 0x7: Remote crossl park out 
+	 * 0x8: Remote parallel  park out 
+	 * 0x9~
+	 * 0xF: Reserved
+	 */
+	optional uint32 APAActiveFuncInd =15;//	自动泊车激活功能 
+
+	optional uint32 ApaSelectIDInd =16;//泊车选择的车位ID
+	optional float ParkingStopDist =17;//泊车剩余距离
+	optional ADAS_arr_TrajectoryPoint APARPATrajectory= 18;// 泊车规划引导线
+	optional uint32 RpaAvaliableStatus =19;//	Rpa可用状态 0x0: not availale 0x1: available
+	optional ADAS_strt_EgoPose ApaEgoVehPos =20;//	泊车位姿信息
+	optional ADAS_strt_ApaTargetSlotInfo ApaTargetSlotInfo =21;//	泊入目标车位信息
+	optional uint32 APAStartButtonSts =22;//	开始泊车按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 APARPAButtonSts =23;//	自动泊车切换RPA按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+
+	/**
+	 * 0x0: Off  
+	 * 0x1: Standby  
+	 * 0x2: Preparing  
+	 * 0x3: Guidance active  
+	 * 0x4: Completed  
+	 * 0x5: Failure  
+	 * 0x6: Terminate  
+	 * 0x7: Pause  
+	 * 0x8: Reserved
+	 */
+	optional uint32 BAFASts =24;//	遥控直入直出状态机信息 
+
+	optional uint32 ParkInDirectionAvaType =25;//	泊入车位的可泊方向类型 0x0: None 0x1: Head in 0x2: Back in 0x3: Head in and Back in
+	optional uint32 APAResumeButtonSts =26;//恢复泊车按钮可用状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 APAPopup =27;//APA弹窗 0x0: None 0x1: RPA Without Supervison Notice 0x2: RPA Model Select Popup 0x3-0xFE: Reserved
+}
+
+//决策引导线
+message ADAS_arr_TrajectoryPoint{
+	repeated ADAS_strt_TrajectoryPoint points = 1;
+}
+
+//ADAS_strt_MRAInfo_2 兼容 ADAS_strt_MRAInfo  循迹倒车功能输出信息
+message ADAS_strt_MRAInfo
+{
+	optional uint32 MRASts = 1; //循迹倒车状态信息
+	optional float MRATrajRecordDist =2 ;//循迹倒车记录路径长度
+	optional uint32 MRACheckSts =3 ;//循迹倒车不能激活原因
+	optional float MRATrajRemainingDist =4; //循迹倒车剩余距离
+	optional uint32 MRAAvaliableStatus =5 ;//循迹倒车可用状态
+	optional ADAS_arr_TrajectoryPoint MRATrajectory =6; //循迹倒车引导线
+	optional uint32 MraOperationResp =7 ;//MRA按键状态反馈 0x0: No Response  0x1: Succeed 0x2: Failed
+	optional uint32 MRAStartButtonSts =8;//开始倒车按钮可用状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 MRAResumeButtonSts =9;//恢复倒车按钮可用状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+}
+
+//HPA巡航状态、HPA学习路线时显示沿途标签
+message ADAS_strt_HPAOnWayLabel
+{
+	optional uint32 HPAOnWayLabelID = 1; //  记忆泊车路径标签ID
+	optional uint32 HPAOnWayLabelType = 2; //  记忆泊车路径标签类型 0电梯 1入口 2出口 3充电
+	optional ADAS_strt_HPAVPAPathInfo HPAOnWayLabelPoint = 3; // 记忆泊车路径标签坐标
+	optional uint32 HPAOnWayLabelPointNum =4 ;//记忆泊车路径标签数量
+
+}
+// HPA巡航状态、HPA学习路线时显示沿途标签数组
+message ADAS_arr_HPAOnWayLabelReplay
+{
+	repeated ADAS_strt_HPAOnWayLabel way_label = 1;
+}
+
+//车位感知信息
+message ADAS_arr_ParkingSlot{
+	repeated ADAS_strt_ParkingSlot parking_slot = 1;
+}
+
+//泊车静态目标
+message ADAS_strt_HPAStaticObject{
+	optional uint32 objectId = 1; //目标唯一id
+	 
+	/**
+	 * 0x0:Unknow; 
+	 * 0x1:锥桶; 
+	 * 0x2:水马; 
+	 * 0x3:三角牌; 
+	 * 0x4:停车杆(合状态); 
+	 * 0x5:减速带; 
+	 * 0x6:地锁; 
+	 * 0x7:方柱;
+	 * 0x8:圆柱; 
+	 * 0x9:杆Pole; 
+	 * 0xA:停车杆(开状态); 
+	 * 0xB:交通柱; 
+	 * 0xC:隔离柱; 
+	 * 0xD:防撞桶; 
+	 * 0xE:施工导流标志牌;
+	 * 0xF:停车标志牌; 
+	 * 0x10:充电桩; 
+	 * 0x11:石墩; 
+	 * 0x12:限位器; 
+	 * 0x13:其他;
+	 */
+	optional uint32 objectType = 2; //目标类型:
+	 
+	optional float objectPoseX = 3; //目标位置X坐标 单位：cm （坐标系自车后轴中心为原点）
+	optional float objectPoseY = 4; //目标位置Y坐标 单位：cm （坐标系自车后轴中心为原点）
+	optional float objectPoseZ = 5; //目标位置Z坐标
+	optional float objectYaw = 6; //目标位姿
+	optional uint32 objectLength = 7; //目标长度 cm
+	optional uint32 objecWidth = 8; // 目标宽度 cm
+	optional uint64 timestampnSec = 9; //时间戳纳秒
+	optional uint32 laneID = 10; //所属车道ID
+	 
+	/**
+	 * 0x0: None 
+	 * 0x1: L1 Floor 
+	 * 0x2: G1 Floor 
+	 * 0x3: L2 Floor 
+	 * 0x4: G2 Floor 
+	 * 0x3: L3 Floor 
+	 * 0x4: G3 Floor 
+	 * 0x3: L4 Floor 
+	 * 0x4: G4 Floor 
+	 * 0x3: L5 Floor 
+	 * 0x4: G5 Floor
+	 */
+	optional uint32 HPAobjectFloor =11; //目标所属楼层 
+}
+
+//HPA路线管理、HPA路线学习完成保存时的车位、路线、障碍物、路线ID等数据
+message ADAS_strt_HPAPathDetail
+{
+	optional uint32 HpaPathID =1;//路线ID
+	optional uint32 PathState =2;//路线学习状态 0x0: not active 0x1: saving 0x2: saved 0x3: failed 0xFF: Invalid
+	optional string PathName =3	;//路线名称
+	optional uint32 PathSaveProgress =4;//路线保存进度
+	optional float PathLength =5;//路线长度
+	optional ADAS_arr_PathPoint LinePoint =6	;//路线学习点集
+	optional uint32 PathMatchSts =7;//路线匹配状态 0x0: Fail 0x1: Success
+	optional uint32 PathLabel =8;//路线标签 0x0：No label 0x1：Home 0x2：office 0x3：Other
+	optional uint32 HPAPathType =9;//路线模式  0x0: None  0x1：HPA ParkIn  0x2：HPA ParkOut
+	optional ADAS_arr_HPAOnWayLabelReplay HPAOnWayLabelReplay =10;//HPA沿途标签显示  ADAS_arr_HPAOnWayLabelReplay
+	optional ADAS_arr_HPAPathslot HPAPathDetailSlot =11;//显示路线中车位
+	optional ADAS_arr_HPAParkingStaticObjects HPAPathStaticObject =12;//显示路线中静态障碍物
+}
+
+//记忆泊车全局路线数据
+message ADAS_arr_HPAPathDetail
+{
+	repeated ADAS_strt_HPAPathDetail path_detail =1;
+}
+
+//泊车规划引导线
+message ADAS_arr_HPATrajectoryPoint
+{
+	repeated ADAS_strt_HPAVPAPathInfo path_point =1;
+}
+
+//路线记忆车位
+message ADAS_arr_HPAPathslot
+{
+	repeated ADAS_strt_ParkingSlot parking_slot = 1;
+}
+
+//路线记忆减速带
+message ADAS_strt_SpeedBumpInfo
+{
+	optional uint32 SpeedBumpId = 1; //减速带id
+	optional float SpeedBumpPoseX =2; //减速带x坐标
+	optional float SpeedBumpPoseY =3; //减速带Y坐标
+	optional float SpeedBumpPoseZ =4; //减速带Z坐标
+	optional int32 SpeedBumpLength =5; //减速带长度
+	optional int32 SpeedBumpWidth =6; //减速带宽度
+	optional int32 SpeedBumpHeight =7; //减速带高度
+}
+
+//路线记忆减速带
+message ADAS_arr_HPASpeedBumpInfo
+{
+	repeated ADAS_strt_SpeedBumpInfo bumps =1;
+}
+
+//终点车位顶点
+message ADAS_strt_SlotPoint{
+	optional float Point_X =1; //x坐标位置信息
+	optional float Point_Y =2; //y坐标位置信息
+	optional float Point_Z =3; //Z坐标
+}
+
+//HPA终点信息
+message ADAS_strt_HpaEndPos
+{
+	optional ADAS_strt_SlotPoint EndPosCenterPoint =1; //终点车位的中心点
+	optional ADAS_strt_SlotPoint EndSlotPoint0Top1 =2; //终点车位顶点1
+	optional ADAS_strt_SlotPoint EndSlotPoint1Top2 =3; //终点车位顶点2
+	optional ADAS_strt_SlotPoint EndSlotPoint2Bottom1 =4; //终点车位顶点3
+	optional ADAS_strt_SlotPoint EndSlotPoint3Bottom2 =5; //终点车位顶点4
+}
+
+//记忆泊车地面停止交通标志
+message ADAS_strt_RoadMarker
+{
+	optional uint32 RoadMarkerType = 1; //路面标记类型
+	optional uint64 RoadMarkerID = 2; //路面标记ID
+	optional uint32 RoadMarkerTrackingSts = 3; //路面标记跟踪状态
+	optional float RoadMarkerPose1X = 4; //路面标记点1X坐标
+	optional float RoadMarkerPose1Y = 5; //路面标记点1Y坐标
+	optional float RoadMarkerPose2X = 6; //路面标记点2X坐标
+	optional float RoadMarkerPose2Y = 7; //路面标记点2Y坐标
+	optional uint32 RoadMarkerWidth = 8; //路面标记(人行道）宽度
+}
+
+//记忆泊车地面交通标志
+message ADAS_arr_RoadMarker
+{
+	repeated ADAS_strt_RoadMarker marker = 1;
+}
+
+//车道线形点
+message ADAS_strt_LinePoint
+{
+	optional float LinePointX =1; //点位置X坐标，车辆坐标系参考后轴中心点的X，单位cm
+	optional float LinePointY =2; //点位置Y坐标，车辆坐标系参考后轴中心点的Y，单位cm
+	optional float LinePointZ =3; //点位置Z坐标，车辆坐标系参考后轴中心点的Z，单位cm
+}
+
+//车道线形点数组
+message ADAS_arr_LinePoint
+{
+	repeated ADAS_strt_LinePoint point = 1;
+}
+
+//车道线信息
+message ADAS_strt_LaneLine
+{
+	optional uint32 lineIndex = 1; //车道线索引
+	optional uint64 lineId = 2; //车道线ID
+	optional uint32 lineColor = 3; //车道线颜色 0x0: None 0x1: gray 0x2: white 0x3: green 0x4: yellow 0x5: red 0x6: blue 0x7:  reserved
+	optional uint32 lineType = 4; //车道线类型
+	optional float lineEquation_C0 = 5; //m 车道线方程C0
+	optional float lineEquation_C1 = 6; //rad 车道线方程C1
+	optional float lineEquation_C2 = 7; //1/m 车道线方程C2
+	optional float lineEquation_C3 = 8; //1/m^2 车道线方程C3
+	optional float laneLineWidth = 9; //单位：cm 车道线宽度
+	optional float lineStart_X = 10; //单位：cm 车道线起点X坐标
+	optional float lineStart_Y = 11; //单位：cm 车道线起点Y坐标
+	optional float lineEnd_X = 12; //单位：cm 车道线终止点X坐标
+	optional float lineEnd_Y = 13; //单位：cm 车道线终止点Y坐标
+	optional ADAS_arr_LinePoint list = 14; //车道线形点数组
+}
+
+//车道线信息数组
+message ADAS_arr_LaneLineData
+{
+	repeated ADAS_strt_LaneLine line = 1;
+}
+
+//记忆泊车回放路线信息  HPA巡航状态时的车位、路线、障碍物、其他距离数据
+//ADAS_strt_HPARepalyPathInfo_2  ADAS_strt_HPARepalyPathInfo(1-9字段)
+message ADAS_strt_HPARepalyPathInfo
+{
+	optional uint32 HpaReplayPathID =1; //路线ID
+	optional string ReplayPathName =2; //路线名称
+	optional float ReplayDrivingDist =3; //路线行驶距离
+	optional float HPARepayRemainingDist =4; //记忆泊车回放剩余距离
+	optional ADAS_arr_PathPoint ReplayLinePoint = 5; //路线学习点集
+	optional ADAS_arr_HPAPathslot HPAReplayPathSlotInfo =6; //路线记忆车位
+	optional ADAS_arr_HPASpeedBumpInfo HPASpeedBumpInfo =7; //路线记忆减速带
+	optional uint32 ReplayPathLabel =8; //路线标签 0x0：No label 0x1：Home 0x2：office 0x3：Other
+	optional ADAS_strt_HpaEndPos HpaEndPos =9; //HPA终点信息
+	optional ADAS_arr_HPAParkingStaticObjects HPAStaticObjectReplay =10; //静态障碍物回放
+	optional ADAS_arr_RoadMarker HPARoadMarkerReplay =11;
+	optional ADAS_arr_LaneLineData HPALaneLineReplay =12;
+}
+
+//路线学习点集
+message ADAS_arr_PathPoint
+{
+	repeated ADAS_strt_HPAVPAPathInfo path_point =1;
+}
+
+//HPA学习路线时的车位、路线、障碍物、路线ID等数据
+//记忆泊车学习路线实时信息
+message ADAS_strt_HPATrainingPathInfo
+{
+	optional uint32 HpaTrainingPathID =1; //路线ID Gen_val_ID
+	optional string TrainingPathName =2; //路线名称 ADAS_string_PathName
+	optional float HPAtrainingPathCurrentDist =3; //记忆泊车路线学习实时累计距离 ADAS_val_ParkingDist
+	optional float TrainingPathLength =4; //路线长度 ADAS_val_ParkingDist
+	optional ADAS_arr_PathPoint TrainingLinePoint =5; //路线学习点集 ADAS_arr_PathPoint_2
+	optional ADAS_arr_HPAPathslot HPATrainingPathSlotInfo =6; //路线记忆车位 ADAS_arr_HPAPathslot_2
+	optional ADAS_arr_HPASpeedBumpInfo HPASpeedBumpInfo =7;	//路线记忆减速带 ADAS_arr_HPASpeedBumpInfo
+	optional uint32 TrainingPathLabel = 8; //路线标签 0x0：No label 0x1：Home 0x2：office 0x3：Other ADAS_enum_PathLabel
+	optional ADAS_arr_HPAParkingStaticObjects HPATrainingStaticObject = 9; //静态障碍物显示 ADAS_arr_HPAParkingStaticObjects
+	optional uint32	CompleteTrainingButtonSts = 10; //完成学习按钮	ADAS_enum_ParkingButtonSts
+	optional uint32	CompleteAndParkTrainingButtonSts = 11; //泊入并完成学习按钮	ADAS_enum_ParkingButtonSts
+}
+
+//记忆泊车循迹信息统计
+message ADAS_strt_HpaUseData {
+	optional float HpaCruiseDist =1; //本次泊车距离
+	optional uint32 HpaCruiseTime =2; //本次泊车时长
+	optional uint32 HPAVPAGiveWayPedTimes =3; //让路行人次数
+	optional uint32 HPAVPAGiveWayVehTimes =4; //让路车辆次数
+	optional uint32 HPASpeedBumpNum =5; //通过减速带数量
+}
+
+//HPA  VPA 功能输出状态
+message ADAS_strt_AdvanceParkingInfo {
+	optional uint32 HPASts= 1; //记忆泊车状态信息
+	optional uint32 HPASearchOnWaySelectSlotID=2; //记忆泊车沿途找车位泊入车位在记忆路线中的车位ID
+	optional ADAS_strt_HpaUseData HPAUseData= 3; //记忆泊车循迹信息统计
+	/**
+	 * 0x0: Default 
+	 * 0x1: VPA map  download or update 
+	 * 0x2: VPA map  downloading 
+	 * 0x3: VPA map  updating 
+	 * 0x4: Parking system error 
+	 * 0x5: Other ADAS or dynamic function active
+	 * 0x6: Loc information not available 
+	 * 0x7: Rear trunk not closed 
+	 * 0x8: Door not closed 
+	 * 0x9: External mirror folded 
+	 * 0xA: Route planning failed 
+	 * 0xB: Low HV battery SOC
+	 */
+	optional uint32 VPAWarningInfo=4; //代客泊车报警信息
+	optional uint32 HPAPathSelectIDInd= 5 ;//	记忆泊车路线选择ID反馈
+
+	/**
+	 * 0x0:none 
+	 * 0x1:make a way 
+	 * 0x2:trun around 
+	 * 0x3:by pass 
+	 * 0x4:Stop and wait 
+	 * 0x5:reverse assistance 
+	 * 0x6: pull over 
+	 * 0x7: drive off 
+	 * 0x8: Cruise drive
+	 * 0x9: ready to turn left 
+	 * 0xA: ready to turn Right 
+	 * 0xB: ready to reach target slot 
+	 * 0xC: ready to park in 
+	 * 0xD: Parking in 
+	 * 0xE:Parking success 
+	 * 0xF: Reday to  reach cross 
+	 * 0x10: Reday to go through slope
+	 * 0x11: Caution pedestrains 
+	 * 0x12: Caution vehicles 
+	 * 0x13: Caution sorroundings 
+	 * 0x14: Release brake pedal( use for special text and voice reminder) 
+	 * 0x15: Ready to reach target point
+	 * 0x16: Stop and wait vehicle 
+	 * 0x17: By pass vehicle 
+	 * 0x18: Stop and wait pedestrian 
+	 * 0x19: By pass pedestrian 
+	 * 0x1A: Start going uphill 
+	 * 0x1B: End uphill 
+	 * 0x1C: Start going downhill 
+	 * 0x1D: End downhill
+	 */
+	optional uint32 HPAVPARepalyRemind=6; //记忆泊车代客泊车语音及显示提示 
+
+	optional ADAS_arr_HPATrajectoryPoint HPAVPATrajectory=7; //泊车规划引导线
+	optional uint32 HpaOperationResp=8; //HPA按键状态反馈 0x0: No Response  0x1: Succeed 0x2: Failed
+	optional ADAS_strt_EgoPose HpaEgoVehPos =9; //HPA位姿信息
+	optional uint32 VPADropOffVld =10 ; //代客泊车Drop off 可用性 0x0: not availale 0x1: available
+	optional uint32 VPAPickUpVld =11; //代客泊车Pick up 可用性  0x0: not availale 0x1: available
+	optional uint32 VPASelfMapBuildVld =12; //代客泊车自建地图可用性  0x0: not availale 0x1: available
+	optional uint32 VPAProcessBarInd =13; //代客泊车进度条 %
+	optional uint32 VPAVld =14; //代客泊车可用性 0x0: not availale 0x1: available
+	optional uint32 VPAPickUpPosSelectReq =15; //代客泊车Pick up 位置选择请求 "0x0:No Request 0x1:Request"
+	optional uint32 VPADropOffPosSelectReq =16; //代客泊车Drop off位置选择请求 "0x0:No Request 0x1:Request"
+
+	/**
+	 * 0x0 : Off
+	 * 0x1 : Passive
+	 * 0x2 : Standby
+	 * 0x3: Guidance active
+	 * 0x4 : Completed
+	 * 0x5 : Failure
+	 * 0x6 : Terminate
+	 * 0x7: Pause
+	 * 0x8: Self build map
+	 */
+	optional uint32 VPASts =17; //代客泊车状态信息 
+
+	optional uint32 VPAFuncTypeFb =18; //代客泊车当前激活功能类型反馈 0x0 : None  0x1 : Pick up 0x2 : Drop off 0x3: Self build map
+	optional float VPARemainingDist =19; //代客泊车剩余距离
+	optional uint32 HPARequestAPAUI =20; //记忆泊车调用自动泊车UI请求 0x0: No Request 0x1: Request
+	/**
+	 * 0x0: None 
+	 * 0x1: Please keep vehicle standstill 
+	 * 0x2: Please close doors 
+	 * 0x3: Please close hood 
+	 * 0x4: Please close trunk 
+	 * 0x5: Please keep driver seatbelt buckled 
+	 * 0x6: System failure
+	 * 0x7: Partner ECU error 
+	 * 0x8: Partner ECU function active 
+	 * 0x9: Available path have been in current paking lot 
+	 * 0xA: Path quantity over limit 
+	 * 0xB: Path is Saving 
+	 * 0xC: Path match failed
+	 * 0xD: Not available Area to active HPA 
+	 * 0xE: Please press brake pedal 
+	 * 0xF: Path is matching 
+	 * 0x10: Low HV battery SOC 
+	 * 0x11: Please unfold outside mirror 
+	 * 0x12: Please remove charger 
+	 * 0x13: Other ADAS Active_HPA
+	 */
+	optional uint32 HpaActiveCheckSts =21; //记忆泊车激活检测结果反馈 
+
+	optional uint32 HPAReplayRecAvl =22; //记忆泊车推荐回放路线可用 0x0: not availale 0x1: available
+	optional uint32 HPAPopup =23; //记忆泊车弹窗 0x0: None 0x1 : TrainPathEnable 0x2 : TrackPathEnable 0x3 : CoverOnwayLabel 0x4 : CoverPath
+	optional uint32 HPAStartButtonSts =24; //记忆泊车开始按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 HPAResumeButtonSts = 25; //记忆泊车恢复按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 HPARPAButtonSts =26; //记忆泊车切换RPA按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+	optional uint32 CreatPathButtonSts =27; //创建路线图标显示状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+}
+
+//泊车动态目标数组 
+message ADAS_strt_DynamicObject
+{
+	optional uint64 objectId = 1; //目标唯一id
+	 
+	/**
+	 * 0x0:Unknow(未知) 
+	 * 0x1:Pedestrian(静态行人); 
+	 * 0x2:Cyclist(骑自行车的人); 
+	 * 0x3:Car(汽车) 
+	 * 0x4:Truck(卡车-中型货车); 
+	 * 0x5:Bus(公共汽车); 
+	 * 0x6: Motorcycle(载人摩托车); 
+	 * 0x7: Bicycle(载人自行车);
+	 * 0x8:SUV; 
+	 * 0x9:LargeTruck(大型货车); 
+	 * 0xA: Tricycle(载人三轮车); 
+	 * 0xB:SpecialOperationVehicle(特殊车辆); 
+	 * 0xC: OtherVehicle; 
+	 * 0xD:NoRiderBicycle(非载人自行车); 
+	 * 0xE: ElectricBicycle(载人电动自行车，预留);
+	 * 0xF: NoRiderelectricBicycle(非载人电动自行车，预留); 
+	 * 0x10:NoRiderMotorcycle(非载人摩托车); 
+	 * 0x11: NoRiderTricycle (非载人三轮车); 
+	 * 0x12:LrregularCar(异型车); 
+	 * 0x13: LargeAnimals;(静止大中型动物);
+	 * 0x14: SmallAnimals(静止小型动物); 
+	 * 0x15: DynamicLargeAnimals(动态大中型动物); 
+	 * 0x16: DynamicSmallAnimals(动态小型动物); 
+	 * 0x17:DynamicPedestrian(动态行人);
+	 */
+	optional uint32 objectType = 2;
+	 
+	optional uint32 lightStatus = 3; //0x0:Na（无） 0x1:Turnleft（左转） 0x2:Turnright（右转） 0x3:DoubleFlash（双闪） 0x4:Brake（刹车） 0x5: Reverse(倒车灯)
+	optional float objectPoseX = 4; //检出物中心坐标x 单位：cm   （坐标系自车后轴中心为原点）
+	optional float objectPoseY = 5; //检出物中心坐标y 单位：cm    （坐标系自车后轴中心为原点）
+	optional float objectYaw = 6; //检出物朝向偏航角， [-180, 180] 度
+	optional uint32 objectColor = 7; //危险目标等级 0x0: None 0x1: Grey 0x2: Green 0x3: Yellow 0x4: Red 0x5: Darkgrey
+	optional float objectVelocityX = 8; //横向速度 m/s
+	optional float objectVelocityY = 9; //纵向速度  m/s
+	optional uint64 timestampnSec = 10; //时间戳纳秒
+	optional uint64 laneID = 11; //所属车道ID
+}
+
+//泊车静态目标数组
+message ADAS_strt_StaticObject
+{
+	optional uint64 objectId = 1; //目标唯一id
+	 
+	/**
+	 * 0x0:Unknow; 
+	 * 0x1:锥桶; 
+	 * 0x2:水马; 
+	 * 0x3:三角牌; 
+	 * 0x4:停车杆(合状态); 
+	 * 0x5:减速带; 
+	 * 0x6:地锁; 
+	 * 0x7:方柱;
+	 * 0x8:圆柱; 
+	 * 0x9:杆Pole; 
+	 * 0xA:停车杆(开状态); 
+	 * 0xB:交通柱; 
+	 * 0xC:隔离柱; 
+	 * 0xD:防撞桶; 
+	 * 0xE:施工导流标志牌;
+	 * 0xF:停车标志牌; 
+	 * 0x10:充电桩; 
+	 * 0x11:石墩; 
+	 * 0x12:限位器; 
+	 * 0x13:其他;
+	 */
+	optional uint32 objectType = 2; //检出物类型: 
+	 
+	optional float objectPoseX = 3; //检出物中心坐标x 单位：cm   （坐标系自车后轴中心为原点）
+	optional float objectPoseY = 4; //检出物中心坐标y 单位：cm    （坐标系自车后轴中心为原点）
+	optional float objectYaw = 5; //检出物朝向偏航角， [-180, 180] 度
+	optional uint32 objectLength = 6; // 静态目标 cm
+	optional uint32 objecWidth = 7; // 静态目标 cm
+	optional uint64 timestampnSec = 8; //时间戳纳秒
+	optional uint64 laneID = 9; //所属车道ID
+}
+
+// 动态目标信息
+message ADAS_arr_ParkingDynamicObjects {
+	repeated ADAS_strt_DynamicObject dynamic_objects =1;
+}
+
+// 静态目标信息
+message ADAS_arr_ParkingStaticObjects {
+	repeated ADAS_strt_StaticObject static_objects =1;
+}
+
+//泊车静态目标数组
+message ADAS_arr_HPAParkingStaticObjects {
+	repeated ADAS_strt_HPAStaticObject HPA_static_object = 1;
+}
+
+//自建地图数据
+message ADAS_strt_VPASelfBuildMapDate{
+	optional uint32 padding1 = 1;
+	optional uint32 padding2 = 2;
+	optional uint32 padding3 = 3;
+	optional uint32 padding4 = 4;
+	optional uint32 padding5 = 5;
+	optional uint32 padding6 = 6;
+}
+
+// VPA的功能状态信息
+message ADAS_strt_VPAParkingInfo{
+	optional uint32 VPAParkingSts =1; //VPA的状态
+	optional uint32 VPAParkingQuitInd = 2; //VPA退出提示
+	optional uint32 VPAParkingDriOperateInd = 3; //VPA驾驶员操作提示
+	optional uint32 VPAParkingPauseInd = 4; //VPA暂停提示
+	optional uint32 VPAParkingFailureReasonInd = 5; //VPA故障原因
+	optional uint32 VPAParkingVoiceRemind = 6; //VPA语音提示
+	optional float VPABuildMapDistance = 7; //VPA建图距离
+	optional uint32 VPABuildMapProgress = 8; //VPA生成大地图的进度
+	optional uint32 VPABuildMapParkingSlotNumber = 9; //VPA已经学习的车位数量
+	optional uint32 VPABuildMapLayerNumber = 10; //VPA已经 学习了多少层
+	optional uint32 VPACurrentLayer = 11; //VPA车辆所在当前层
+	optional float VPACurisingDistance = 12; //VPA巡航剩余距离
+	optional ADAS_arr_VPARoadLine VPAGlobalRouting = 13; //VPA全局轨迹线
+	optional ADAS_arr_TrajectoryPoint VPADrivingTrajectoryPoint = 14; //决策引导线
+	optional uint32 VPACurrentParkingLotID = 15; //当前位于的停车场ID
+	optional float VPABuildMapMaxDistance = 16; //支持的最大建图距离
+	optional uint32 VPACrusingProgress = 17; //代客泊车进度条
+	optional uint32 VPARpaToggleBtnDisp = 18; //是否显示遥控泊车开关
+	optional uint32 VPAButtonStatus = 19; //驾驶员请求手动建图反馈信号
+}
+// VPA中心道路信息
+message ADAS_arr_VPARoadLine{
+	repeated ADAS_strt_VPARoadLinePoint vpa_road_line_point =1;
+}
+
+// VPA中心道路点的结构
+message ADAS_strt_VPARoadLinePoint {
+	optional ADAS_strt_VPAPointType point = 1;//路线点
+	optional uint32 layer = 2;//所属楼层
+}
+
+// vpa点类型
+message ADAS_strt_VPAPointType {
+	optional float Coordinate_X=1;//X坐标
+	optional float Coordinate_Y=2;//Y坐标
+	optional float Coordinate_Z=3;//Z坐标
+}
+
+// 泊车渲染信息
+message ADAS_strt_ParkingHMIInfo {
+	optional ADAS_arr_TrajectoryPoint ApaCorridor_left = 1;//左侧泊车路径通道
+	optional ADAS_arr_TrajectoryPoint ApaCorridor_right = 2;//右侧泊车路径通道
+	optional uint32 RemainingPercentage = 3;//剩余距离百分比
+	optional ADAS_strt_PlannedPath PlannedPath = 4;//一次性规划轨迹
+	optional ADAS_arr_OccPoint Occ_point = 5;//道路边缘显示
+}
+
+//一次性规划轨迹
+message ADAS_strt_PlannedPath{
+	optional ADAS_arr_TrajectoryPoint planned_path_0 =1;//规划轨迹1
+	optional ADAS_arr_TrajectoryPoint planned_path_1 =2;//规划轨迹2
+	optional ADAS_arr_TrajectoryPoint planned_path_2 =3;//规划轨迹3
+	optional ADAS_arr_TrajectoryPoint planned_path_3 =4;//规划轨迹4
+	optional ADAS_arr_TrajectoryPoint planned_path_4 =5;//规划轨迹5
+}
+
+//道路边缘显示
+message ADAS_arr_OccPoint{
+	repeated ADAS_strt_OccPoint occ_point =1;
+}
+
+//道路边缘显示点
+message ADAS_strt_OccPoint{
+	optional float Coordinate_X =1;//X坐标
+	optional float Coordinate_Y =2;//Y坐标
+	optional float Coordinate_Z =3;//Z坐标
+}
+
+message ADAS_arr_VPAParkingSLot{
+	repeated ADAS_strt_VPAParkingSLot vpa_parking_slots =1;
+}
+
+message ADAS_arr_VPAEntrance{
+	repeated ADAS_strt_VPAEntrance vpa_entrances =1;
+}
+
+message ADAS_arr_VPASpots{
+	repeated ADAS_strt_VPASpot vpa_spots =1;
+}
+
+message ADAS_arr_VPASpeedBump {
+	repeated ADAS_strt_VPASpeedBump vpa_speed_bumps =1;
+}
+
+message ADAS_arr_VPARange {
+	repeated ADAS_strt_VPARange vpa_ranges =1;
+}
+
+message ADAS_arr_VPAStaticObjects {
+	repeated ADAS_strt_VPAStaticObjects vpa_static_objects =1;
+}
+
+
+// 自建图基本信息
+message ADAS_strt_VPASelfBuildMap {
+	optional ADAS_arr_VPAParkingSLot VPAParkingSlotList = 1;//自建图车位列表
+	optional uint32 VPATargetParkingSlotId = 2;//VPA选中的目标库位
+	optional ADAS_arr_VPARoadLine  VPARoadLineList = 3;//VPA地图的道路路线
+	optional uint32 VPATargetEntranceId = 4;//目标停车场入口id
+	optional ADAS_arr_VPAEntrance VPAEntrance = 5;//VPA入口信息
+	optional ADAS_arr_VPASpots VPASpots = 6;//VPA用户特殊车位属性信息
+	optional ADAS_strt_VPALayerInfo VPALayerInfo = 7;//VPA自建图所有层级信息
+	optional ADAS_arr_VPARange VPALayerRange = 8;//VPA每一层的地图的范围，用于大地图渲染
+	optional ADAS_arr_VPASpeedBump VPASpeedBumpList = 9;//自建图减速带信息
+	optional uint32 VPADefaultParkingSlotId = 10;//默认车位id
+	optional ADAS_arr_VPAStaticObjects VPAStaticObjects = 11;//静态障碍物，包含柱子
+}
+
+// VPA停车位信息
+message ADAS_strt_VPAParkingSLot {
+	optional uint32 VPASlotID = 1;//车位ID
+	optional uint32 VPASlotType = 2;//车位类型
+	optional uint32 VPASlotStatus = 3;//车位可用状态
+	optional ADAS_strt_HPAVPAPathInfo VPASlotPointTop1 = 4;//车位顶点1
+	optional ADAS_strt_HPAVPAPathInfo VPASlotPointTop2 = 5;//车位顶点2
+	optional ADAS_strt_HPAVPAPathInfo VPASlotPointBottom1 = 6;//车位顶点3
+	optional ADAS_strt_HPAVPAPathInfo VPASlotPointBottom2 = 7;//车位顶点4
+	optional uint32 VPASlotNum = 8;//车位序号
+	optional uint32 VPASlotFloor = 9;//车位楼层
+	optional ADAS_strt_SlotWheelStopperInfo SlotWheelStopperInfo = 10;//车位轮挡信息
+}
+
+// VPA的出入口信息
+message ADAS_strt_VPAEntrance{
+	optional ADAS_strt_VPAPointType VPAEntrancePoint = 1;//出入口所在的点的位置
+	optional uint32 VPAEntranceLayer = 2;//所属楼层
+	optional uint32 VPAEntranceId = 3;//出入口ID
+	optional uint32 VPAEntranceType = 4;//出入口类型
+}
+
+// VPA用户特殊车位属性信息
+message ADAS_strt_VPASpot {
+	optional uint32 VPASlotID = 1;//车位ID
+	optional string VPASpotName = 2;//用户特殊车位名字
+	optional uint32 VPASpotFloor = 3;//用户特殊车位的楼层
+	repeated uint32 VPASpotLabel = 4;//用户特殊车位的标签信息
+}
+
+// 自建图层级信息
+message ADAS_strt_VPALayerInfo {
+	optional uint32 VPALayerNumber = 1;//总层数
+	repeated uint32 VPALayerList = 2;//楼层列表
+	repeated string VPATunnelList = 3;//通道名列表
+}
+
+//  VPA地图范围
+message ADAS_strt_VPARange {
+	optional uint32 VPARangeFloor = 1;//范围所属楼层
+	optional ADAS_strt_VPAPointType VPARangeMinPoint = 2;//最小点
+	optional ADAS_strt_VPAPointType VPARangeMaxPoint = 3;//最大点
+}
+
+// VPA地图范围
+message ADAS_strt_VPASpeedBump {
+	optional uint32 VPASpeedBumpFloor = 1;//范围所属楼层
+	optional ADAS_strt_VPAPointType VPASpeedBumpStartPoint = 2;//减速带起始点
+	optional ADAS_strt_VPAPointType VPASpeedBumpEndPoint = 3;//监督带终点
+}
+
+// VPA静态障碍物
+message ADAS_strt_VPAStaticObjects {
+	optional ADAS_strt_StaticObject StaticObjects = 1; //静态障碍物
+	optional uint32 StaticObjectsFloor = 2; //静态障碍物所属楼层
+}
+
+
+// 自建图地图列表
+message ADAS_arr_VPASelfBuildMap {
+	repeated ADAS_strt_VPASelfBuildMap VPASelfBuildMap= 1; //ADAS_arr_VPASelfBuildMap
+}
+
+//自建图地图列表
+message ADAS_strt_VPASelfBuildMapInfo {
+	optional ADAS_arr_VPASelfBuildMap VPASelfBuildMapList = 1;
+}
+
+message ADAS_arr_VPAParkingLotInfo {
+	repeated ADAS_strt_VPAParkingLotBaseData vpaParkingLotBaseData= 1;
+}
+
+// 代客泊车停车场信息
+message ADAS_strt_VPAParkingLotInfo{
+	optional ADAS_arr_VPAParkingLotInfo VPAParkingLotList=1;
+}
+
+// VPA的停车场的基本信息
+message ADAS_strt_VPAParkingLotBaseData {
+	optional uint32 ParkingLotID=1; //停车场id	Gen_val_ID
+	optional string ParkingLotName=2; //路线名称	ADAS_string_VPAParkingLotName
+	optional float TotalMileage=3; //总长度	Gen_val_float32
+	optional uint32 ParkinglotNumber=4; //总车位数量	DataUint16
+	optional uint32 ParkinglotLayerNumber=5; //总层数	DataUint16
+	optional string ParkingLotAddress=6; //停车场地址	ADAS_string_VPAParkingLotAddress
+}
+
+message parkingInfo{
+	optional ADAS_strt_ParkingGenaralInfo genaral_info = 1; //泊车
+	optional ADAS_arr_ParkingSlot parking_slot = 2; //APA车位列表(自动泊车、自定义泊车、循迹泊车)
+	optional ADAS_strt_APARPAInfo aparpa_info= 3;
+	optional ADAS_strt_MRAInfo mra_info = 4; //MRA的状态信息
+	optional ADAS_arr_ParkingDynamicObjects dynamic_objects =5; //4种泊车共用的动态目标物
+	optional ADAS_arr_ParkingStaticObjects static_objects =6; //APA静态目标物
+	optional ADAS_arr_HPAPathDetail path_detail =7; //HPA路线管理
+	optional ADAS_strt_HPARepalyPathInfo replay_path_info =8; //HPA巡航
+	optional ADAS_strt_HPATrainingPathInfo training_path =9; //HPA学习路线
+	optional ADAS_strt_AdvanceParkingInfo parking_info =10; //记忆泊车
+	optional ADAS_arr_HPAParkingSlot slot =11; //车位感知信息
+	optional int32 mebsts =12; //meb的开关设置项
+	optional ADAS_strt_ParkingSlot parking_slot_str = 13;//APA车位列表(自动泊车、自定义泊车、循迹泊车)
+	optional ADAS_arr_HPAParkingStaticObjects parking_static_objects = 14;
+	optional ADAS_strt_VPASelfBuildMapInfo vpa_self_build_map = 15; //代客泊车自建图数据
+	optional ADAS_strt_VPAParkingLotInfo ntf_vpa_parking_lot_info = 16; //代客泊车停车场信息
+	optional int32 maa_sts = 17; //MAA功能输出信息 //0x0: Off 0x1: On 0x2: Active 0x3: Failure
+	optional ADAS_strt_VPASelfBuildMapDate vpa_self_build_map_date = 18;//自建地图数据
+	optional ADAS_strt_VPAParkingInfo vpa_parking_info = 19;//VPA功能汇总信息
+	optional ADAS_strt_ParkingHMIInfo parking_hmi_info = 20;//泊车渲染信息
+	optional ADAS_strt_VPASelfBuildMap vpa_self_build_map_strt = 21; //代客泊车自建图数据
+}

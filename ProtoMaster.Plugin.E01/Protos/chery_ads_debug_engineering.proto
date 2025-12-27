@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package chery.ads.debug_engineering;
+
+
+/************************行车功能提示*********************************/
+//HD Map审图号等信息
+message Struct_HDMapInfo{
+	optional string ADCClVersion = 1;// ADCC版本信息
+}
+
+
+
+//debug工程数据message整合
+message DebugEngineering_Info {
+    optional Struct_HDMapInfo hdmap_info = 1; //HD Map审图号等信息
+
+}
+
+// //***********************debug工程服务定义**********************//
+// service Chery_DebugEngineering_service {
+//   // -----------------------------------------------------------//
+//   //HD Map审图号等信息
+//   rpc NtfHDMapInfo (  ) //
+//   returns (stream  ); //
+// }

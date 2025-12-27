@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+import "chery_ads_sr.proto";
+import "chery_ads_sdmap.proto";
+import "chery_ads_control.proto";
+import "chery_ads_prompt_information.proto";
+import "chery_ads_debug_engineering.proto";
+
+
+package chery.adas;
+
+//all Info整合
+message adasInfo {
+	optional chery.ads.sense.relity.SR_Info sr_info = 1; //SR数据	
+	optional chery.ads.sdmap.SDmap_Info sdmap_info = 2; //SDmap数据
+	optional chery.ads.control.Control_Info control_info = 3; //Control数据
+	optional chery.ads.prompt.infomation.Prompt_Info prompt_info = 4; //PromptInformation数据
+	optional chery.ads.debug_engineering.DebugEngineering_Info debug_engineering_info = 5; //DebugEngineering数据
+
+}

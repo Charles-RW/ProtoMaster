@@ -1,0 +1,865 @@
+syntax = "proto3";
+package chery.ads.sdmap;
+
+
+// 请求消息
+message chery_request {
+  optional uint32 chery_request_status = 1;  //0x0：请求成功   0x1：请求失败
+}
+
+// 响应消息
+message chery_response {
+  optional uint32 chery_response_status = 1;  //0x0：响应成功   0x1：响应失败
+}
+
+// SD地图导航Route信息 Crabviz
+message ICC_string_RouteInfo {
+	optional string routeInfo =1;
+}
+
+message ICC_strt_TimeAndDist {
+	optional uint32 Dist=1; //距离（单位米）
+	optional uint32 Time=2; //时间（单位秒）
+}
+
+message ICC_arr_TimeAndDist {
+	repeated ICC_strt_TimeAndDist time_and_dist = 1;
+}
+
+message ICC_strt_CrossNaviInfo{
+	optional uint64 CrossNaviPathID=1; // path唯一id
+	optional uint32 CrossNaviSegIdx=2; // 所在segment段，从0开始
+	optional uint32 CrossNaviMainAction=3; //导航动作
+	optional uint32 CrossNaviAssistAction=4; //导航辅助动作
+	optional uint32 CrossManeuverId=5; //路口转向ID
+	optional uint32 CrossNaviDestDirection=6; //途经点、充电站、目的地相对路径的位置关系
+	optional uint32 CrossNaviTunnelFlag=7; //是否为隧道内外分叉
+	optional uint32 CrossNaviOutCnt=8; //进入环岛时为环岛出口数；隧道内分叉为分叉个数
+	optional uint32 CrossNaviManeuverID=9; //满足顺行展示距离时为顺行图标，否则见枚举值
+	optional string CrossNextRoadName=10; //下条道路名称，途经点为途经点或者目的地名称
+	optional uint32 CrossCurToSegmentDist=11; //当前车位所在导航段终点到segIdx终点的距离（单位米）
+	optional uint32 CrossCurToSegmentTime=12; //当前车位所在导航段终点到segIdx终点的时间（单位秒）
+	optional uint32 CrossViaNum=13; //途经点、充电站编号
+}
+
+message ICC_arr_CrossNaviInfo {
+	repeated ICC_strt_CrossNaviInfo cross_navi_info = 1;
+}
+
+message ICC_strt_Coord2DDouble {
+	optional double Coord2DDoubleLon=1; //经度
+	optional double Coord2DDoubleLat=2; //维度
+}
+
+message ICC_strt_Coord3DDouble {
+	optional double Coord3DDoubleLon=1; //经度
+	optional double Coord3DDoubleLat=2; //维度
+	optional double Coord3DDoubleAlt=3; //高度
+}
+
+message ICC_strt_NotAvoidInfo {
+	optional uint32 NotAvoidType = 1; //类型
+	optional uint32 NotAvoidDistToCar=2; //到自车的距离
+	optional ICC_strt_Coord2DDouble NotAvoidCoord2D=3; //二维位置
+	optional ICC_strt_Coord3DDouble NotAvoidCoord3D=4; //三维位置
+	optional uint32 NotAvoidForbidType=5; //禁行类型
+	optional uint32 NotAvoidValid=6; //是否有效
+}
+
+message ICC_strt_NaviInfoPanel {
+	optional uint32 PanelManeuverID =1; //动态转向ID,满足顺行展示距离时为顺行图标
+	optional ICC_strt_TimeAndDist PanelSegmentRemain=2; //当前导航段剩余距离（单位米）和剩余时间（单位秒）
+	optional string PanelNextRouteName=3; //下条道路名称
+	optional uint32 PnlNextRoadNameSegIdx=4; //下条道路名称所在的SegIdx
+	optional uint32 PnlNextRoadNameLinkIdx=5; //下条道路名称所在的linkIdx
+	optional uint32 NaviInfoPanelSplit=6; //当前导航段是否被拆分
+}
+
+message ICC_arr_NaviInfoPanel {
+	repeated ICC_strt_NaviInfoPanel navi_info_panel = 1;
+}
+
+message ICC_strt_ViaPointInfo {
+	optional int32 ViaPointSegmentIdx=1; //导航段索引
+	optional uint32 ViaPointDirection=2; //途经点所在道路方向
+	optional ICC_strt_Coord2DDouble ViaPointShow=3; //显示坐标
+	optional ICC_strt_Coord3DDouble ViaPointProjective=4; //显示坐标的投影点坐标
+	optional string ViaPointPoiName=5; //POI名称
+}
+
+message ICC_arr_ViaPointInfo {
+	repeated ICC_strt_ViaPointInfo via_point_info = 1;
+}
+
+message ICC_strt_EndPoiInfo {
+	optional string EndPoiName=1;//名称
+	optional string EndPoiAddress=2; //地址
+	optional ICC_strt_Coord2DDouble EndPoNaviPos=3; //经纬度信息
+}
+
+//SD地图导航实时信息
+message ICC_strt_NaviInfo{
+	optional int64 NaviPathID=1; //导航路径ID
+	optional int32 NaviCityCode=2; //行政区域编码
+	optional int32 NaviCurrLinkIdx=3; //当前自车所在Link，从0开始, step内的index
+	optional int32 NaviCurrSegIdx=4; //当前导航段Segment index
+	optional int32 NaviCurrPointIdx=5; //当前车位在当前导航段上link中点索引
+	optional int32 NaviType=6; //更新类型
+	optional ICC_arr_TimeAndDist NaviChargeStationRemain=7; //自车到充电站的距离（单位米）和时间（单位秒）
+	optional int32 NaviLinkRemainDist=8; //当前自车所在link剩余的距离（单位米）
+	optional int32 NaviCurrRoadClass=9; //当前自车所在道路等级
+	optional int32 NaviFormWay=10; //自车所在道路属性
+	optional ICC_strt_TimeAndDist NaviRouteRemain=11; //路径剩余距离（单位米）和时间（单位秒）
+	optional ICC_arr_CrossNaviInfo NaviNextCrossInfo=12; //下一路口信息
+	optional int32 NaviInfoFlag=13; //标记当前标签板应该显示的信息是NaviInfoData的哪一个,有效值(0/1)参考NaviInfoPanel
+	optional int32 NaviCrossManeuverID=14; //路口转向ID
+	optional int32 RouteRemainLightCount=15; //路径剩余红绿灯数
+	optional ICC_arr_TimeAndDist NaviViaRemains=16; //自车到途经点的距离（单位米）和时间（单位秒）
+	optional string NaviCurrRoadName=17; //当前道路名称
+	optional int32 NaviRingOutCnt=18; //环岛出口序号，不是个数
+	optional int32 RoundaboutOutAngle=19; //环岛出口度数[0,360]
+	optional int32 NaviDriveTime=20; //实际的行驶用时，包括中途停车时间在内
+	optional int32 NaviDriveDist=21; //实际的行驶里程
+	optional int32 NaviCurrLinkSpeed=22; //当前link的历史行驶速度， 离线暂没有值
+	optional ICC_strt_NotAvoidInfo NaviNotAvoidInfo=23; //未避开的设施及禁行
+	optional ICC_arr_NaviInfoPanel NaviInfoData=24; //NaviInfo标签板显示内容专用
+	optional string NaviGateName=25; //黑卡需要的小区门的名字
+	optional string NaviAoiName=26; //aoi名字
+	optional int32 NaviInnerRoad=27; //偏航抑制态
+	optional ICC_arr_ViaPointInfo MViaPointInfoArrList=28; //途经点列表
+	optional ICC_strt_EndPoiInfo NaviEndPoiInfo=29; //终点信息
+}
+
+message ICC_strt_CameraSpeed{
+	optional int32 SpeedLimitInfo =1; //电子眼限速信息
+}
+
+message ICC_arr_CameraSpeed{
+   repeated ICC_strt_CameraSpeed camera_speeds =1;
+}
+
+message ICC_strt_NaviSubCameraExt{
+	optional uint32 SubCameraId=1; //细类电子眼id
+	optional uint32 BuswayTimeEnable=2; //公交车道是否生效,  0x0: Not in effect（不生效）0x1: In effect（生效
+  
+    /**
+     * 0x0: SUB_CAMERA_EXT_TYPE_NULL（无效值）
+     * 0x1: SUB_CAMERA_EXT_TYPE_IllegalUseLight（违规用灯）
+     * 0x2: SUB_CAMERA_EXT_TYPE_IllegalUseSafetyBelt（不系安全带）
+     * 0x3: SUB_CAMERA_EXT_TYPE_DoNotFollowLane（违规占车道）
+     * 0x4: SUB_CAMERA_EXT_TYPE_IllegalPassCross（违规过路口）
+     * 0x5: SUB_CAMERA_EXT_TYPE_DialPhoneWhenDriving（开车打手机）
+     * 0x6: SUB_CAMERA_EXT_TYPE_LaneLimitSpeed（分车道限速）
+     * 0x7: SUB_CAMERA_EXT_TYPE_UltrahighSpeed（超高速）
+     * 0x8: SUB_CAMERA_EXT_TYPE_VeryLowSpeed（超低速）
+     * 0x9: SUB_CAMERA_EXT_TYPE_VariableSpeed（可变限速）
+     * 0xA: SUB_CAMERA_EXT_TYPE_TrafficLight（闯红灯）
+     * 0xB: SUB_CAMERA_EXT_TYPE_EndNumberLimit（尾号限行）
+     * 0xC: SUB_CAMERA_EXT_TYPE_EnvironmentalLimit（环保限行）
+     * 0xD: SUB_CAMERA_EXT_TYPE_BreachProhibitionSign（违反禁令标志）
+     * 0xE: SUB_CAMERA_EXT_TYPE_ViolateProhibitedMarkings（违反禁止标线）
+     * 0xF: SUB_CAMERA_EXT_TYPE_CourtesyCrossing（礼让行人）
+     * 0x10: SUB_CAMERA_EXT_TYPE_ReverseDriving（逆向行驶）
+     * 0x11: SUB_CAMERA_EXT_TYPE_IllegalParking（违章停车）
+     * 0x12: SUB_CAMERA_EXT_TYPE_Bicyclelane（占用非机动车道）
+     * 0x13: SUB_CAMERA_EXT_TYPE_Busway（占用公交专用车道）
+     * 0x14: SUB_CAMERA_EXT_TYPE_EmergencyLane（占用应急车道）
+     * 0x15: SUB_CAMERA_EXT_TYPE_Honk（禁止鸣笛）
+     * 0x16: SUB_CAMERA_EXT_TYPE_FlowSpeed（流动测速）
+     * 0x17: SUB_CAMERA_EXT_TYPE_CourtesyCarCrossing（路口不让行-让车）
+     * 0x18: SUB_CAMERA_EXT_TYPE_RailwayCrossing（违规过铁路道口）
+     * 0x19: SUB_CAMERA_EXT_TYPE_IntervalvelocityStart（区间测速起点）
+     * 0x1A: SUB_CAMERA_EXT_TYPE_IntervalvelocityEnd（区间测速终点）
+     * 0x1B: SUB_CAMERA_EXT_TYPE_IntervalvelocityStartEnd（区间测速起终点）
+     * 0x1C: SUB_CAMERA_EXT_TYPE_CarSpacing（车间距抓拍）
+     * 0x1D: SUB_CAMERA_EXT_TYPE_HOVLane（HOV车道）
+     * 0x1E: SUB_CAMERA_EXT_TYPE_OccupiedLine（压线抓拍）
+     * 0x1F-0x62: Reserved
+     * 0x63: SUB_CAMERA_EXT_TYPE_ETC（ETC拍照）
+     * 0x64: SUB_CAMERA_EXT_TYPE_BreakRule（无细类的违章）
+     * 0x65: SUB_CAMERA_EXT_TYPE_Surveillance（视频监控）
+     * 0x66-0xFE: Reserved
+     * 0xFF: SUB_CAMERA_EXT_TYPE_Consequent（当前枚举边界值，仅用于表征赋值边界，无实际业务意义）
+     */
+	optional uint32 SubType=3;// 电子眼的详细违章类型
+
+	optional uint32 Penalty=4; //高罚数据是否生效	   0x0: Not in effect（不生效）0x1: There is a ticket（有罚单）0x2: High fine（高罚）
+	optional uint32 CameraPriority=5;// 电子眼显示优先级
+	optional uint32 CameraisNew=6;// 是否是新增电子眼	 0x0: No 0x1: Yes
+	optional uint32 CameraisVariableSpeed=7; //是否可变限速电子眼	   0x0: No 0x1: Yes
+	optional uint32 CameraisMatch=8; //区间测速是否配对:仅对区间测速电子眼生效	  0x0: No 0x1: Yes
+	optional uint32 CameraisSpecial=9; //城市特色电子眼标识	 0x0: No 0x1: Yes
+	optional ICC_arr_CameraSpeed CameraSpeedLimit=10; //电子眼限速
+}
+
+message ICC_arr_NaviSubCameraExt {
+   repeated ICC_strt_NaviSubCameraExt navi_sub_camera_ext =1;
+}
+
+//SD地图导航电子眼信息
+message ICC_strt_NaviCameraExt{
+	optional int32 CameraId=1; //电子眼id
+	optional int32 CameraSegmentIdx=2; //电子眼所在segment索引
+	optional int32 CameraLinkIndex=3; //电子眼所在link索引
+	optional int32 CameraDistance=4; //自车到电子眼距离
+	optional int32 CameraDistanceToEnd=5; //电子眼到Link终点的距离(单位:米, 仅导航场景生效）
+	optional int32 CameraRoadClass=6; //电子眼所在道路的道路等级
+	optional int32 CameraisHidden=7; //是否隐藏式电子眼
+	optional ICC_strt_Coord2DDouble CameraCoord2D=8; //摄像头位置坐标
+	optional ICC_strt_Coord3DDouble CameraCoord3D=9; //摄像头位置坐标
+	ICC_arr_NaviSubCameraExt SubCameras=10; //电子眼细类
+}
+
+//SD地图巡航电子眼信息
+message ICC_strt_CruiseFacilityInfo {
+  optional ICC_strt_Coord2DDouble CruiseFacilityPos=1; //位置
+  
+    /**
+     * 0x0: AUTO_UNKNOWN_ERROR（非法操作）
+     * 0x1-0x3: Reserved（预留）
+     * 0x4: CruiseSpeedCamera（测速摄像）
+     * 0x5: CruiseIllegalCamera（违章拍照）
+     * 0x6-0xB: Reserved（预留）
+     * 0xC: CruiseRailwayCrossing（铁路路口）
+     * 0xD: CruiseRockFallLeft（左侧落石）
+     * 0xE: CruiseAccidentProne（事故易发地段）
+     * 0xF: CruiseGroundSlippery（路段易滑）
+     * 0x10: CruiseThroughVillage（村庄）
+     * 0x11: Reserved（预留）
+     * 0x12: CruiseThroughSchool（学校）
+     * 0x13: CruiseKeeperRailwayCrossing（有人看官的铁路道口）
+     * 0x14: CruiseNokeeperRailwayCrossing（无人看管的铁路道口）
+     * 0x15: CruiseBothSidesNarrow（道路两侧变窄）
+     * 0x16: CruiseSharpTurnLeft（向左急转弯）
+     * 0x17: CruiseSharpTurnRight（向右急转弯）
+     * 0x18: CruiseReverseDetour（反向转弯）
+     * 0x19: CruiseContinueDetour（连续弯道）
+     * 0x1A: CruiseCarIntersectLeft（左侧车辆交汇处）
+     * 0x1B: CruiseCarIntersectRight（右侧车辆交汇处）
+     * 0x1C: CruiseSurveillanceCamera（监控摄像）
+     * 0x1D: CruiseBuswayCamera（公交专用道拍照）
+     * 0x1E: Reserved（预留）
+     * 0x1F: CruiseNoPassing（禁止超车）
+     * 0x20-0x23: Reserved（预留）
+     * 0x24: CruiseNarrowRightSide（右侧变窄）
+     * 0x25: CruiseNarrowLeftSide（左侧变窄）
+     * 0x26: CruiseNarrowBridge（窄桥）
+     * 0x27: CruiseAround（左右绕行）
+     * 0x28: CruiseAroundLeft（左侧绕行）
+     * 0x29: CruiseAroundRight（右侧绕行）
+     * 0x2A: CruiseRockFallRight（右侧落石）
+     * 0x2B: CruiseMountainDangerLeft（左侧靠山险路）
+     * 0x2C: CruiseMountainDangerRight（右侧靠山险路）
+     * 0x2D-0x2E: Reserved（预留）
+     * 0x2F: CruiseUpwardSlope（上陡坡）
+     * 0x30: CruiseDonwardSlope（下陡坡）
+     * 0x31: CruiseWaterRoad（过水路面）
+     * 0x32: CruiseRoughRoad（路面不平）
+     * 0x33: Reserved（预留）
+     * 0x34: CruiseSlowDown（慢行）
+     * 0x35: CruiseDanger（注意危险）
+     * 0x36: CruiseWindArea（横风区）
+     * 0x37-0x39: Reserved（预留）
+     * 0x3A: CruiseTunnel（隧道）
+     * 0x3B: CruiseFerry（渡口）
+     * 0x3C-0x5B: Reserved（预留）
+     * 0x5C: CruiseRedLightCamera（闯红灯拍照）
+     * 0x5D: CruiseEmergencyLaneCamera（应急车道拍照）
+     * 0x5E: CruiseNoMotorizedCamera（非机动车拍照）
+     * 0x5F-0x63: Reserved（预留）
+     * 0x64: CruiseHighIllegalArea（违章高发地）
+     */
+	optional int32 CruiseFacilitType=2;
+	optional int32 CruiseFacilitDistance=3; // 距离设施的剩余距离，单位:m
+	optional int32 CruiseFacilitLimitSpeed=4; //限速值，单位:km/h
+
+}
+
+message ICC_strt_LightState {
+	optional uint32 lightType=1; //红绿灯状态类型 0x0: None 0x1: Countdown for the red light（红灯倒计时） 0x2: Green light, passage allowed（绿灯可通行）0x3: About to turn red（即将变红灯）
+	optional uint64 lastSeconds=2; //剩余时间
+	optional uint64 lightStateStime=3; //灯态开始时间戳，单位秒,1970,utc+8
+	optional uint64 lightStateEtime=4; //灯态结束时间戳，单位秒,1970,utc+8
+}
+
+//灯态信息
+message ICC_strt_TrafficLightInfo {
+	optional uint64 trafficLightWaitNum=1; //等红绿灯轮数
+	optional uint32 trafficLightDir=2; //红绿指示方向  0x0: Unknown 0x1: It is a left turn（是左转） 0x2: It is a right turn（是右转）0x3-0x6: Reserved 0x7: It is a U-turn（是调头）0x8: It is going straight（是直行）
+	optional ICC_strt_LightState TrafficLightStates=3;//灯态
+	optional string TrafficLightDesc=4; //灯态列表
+
+	/**
+     * 0x0: Do not display the light status and countdown.
+     * 0x1: Only display the countdown (仅展示倒计时 (实际不存在，因为有倒计时一定伴随有灯态))
+     * 0x2: Only display the light status, and do not display the countdown (仅展示灯态，不展示倒计时)
+     * 0x3: Display both the light status and the countdown (展示灯态和倒计时)
+	 */
+	optional uint32 trafficLightShowType=5; //显示形态标识
+  
+	optional uint32 trafficLightPhase=6; //左转和直行是否同相位 0x0: Not in the same phase（非同相位，即灯态颜色或倒计时读秒不相同）0x1: In the same phase（是同相位，即灯态颜色及倒计时读秒都相同）
+	optional uint32 standardType=7; //灯规格类型 0x0: Invalid value（无效值）0x1: Conventional light（常规灯，有颜色及读秒变化的灯）0x2: Degraded light（降级灯，仅有颜色变化的灯）
+}
+
+//SD地图红绿灯倒计时信息
+message ICC_strt_TrafficLightCountdown {
+	optional int64 SegmentIndex=1; //segment导航段索引
+	optional int64 LinkIndex=2; //link段索引
+	optional ICC_strt_Coord2DDouble TrafficLightPostion=3; //红绿灯位置坐标
+	optional int64 TrafficLightPathID=4; //路线 ID
+	optional int64 TrafficLightLinkID=5; //所在 linkID值
+	optional uint32 RoadStatus=6; //路况状态 0x0: None 0x1: Extremely congested（极度拥堵）0x2: Congested（拥堵）0x3: Congested and slow-moving（拥堵+缓行）0x4: Slow-moving（缓行） 0x5: Smooth traffic（畅通）
+	optional ICC_strt_TrafficLightInfo TrafficLightInfo=7; //实时灯态信息
+}
+
+//SD地图红绿灯倒计时信息动态数组
+message ICC_arr_TrafficLightCountdown {
+    repeated ICC_strt_TrafficLightCountdown trafficLightCountdown=1;//红绿灯倒计时信息
+}
+
+//导航区间测速电子眼实时动态信息
+message ICC_strt_NaviIntCameraDynInfo{
+	optional uint32 naviIntDistance=1; //区间测速电子眼长度
+	optional uint32 naviIntRemainDistance=2; //进入区间测速路段后实时的区间路段剩余距离
+	optional uint32 naviIntAverageSpeed=3; //进入区间测速路段后的实时平均车速
+	optional uint32 reasonableSpeed=4; //进入区间测速路段后的剩余路段的合理车速
+	repeated ICC_strt_CameraSpeed naviIntCameraSpeedLimit=5; //区间测速电子眼限速
+}
+
+//SD地图导航区间测速电子眼实时动态信息
+message ICC_arr_NaviIntCameraDynInfo {
+	repeated ICC_strt_NaviIntCameraDynInfo arrNaviIntCameraDynInfo=1;
+}
+
+//天气详细信息
+message ICC_strt_NaviWeatherInfo_1 {
+	optional uint32 naviWeatherID=1; //天气 ID
+	optional uint32 alertLevelId=2; //预警等级
+	optional uint32 distanceToCar=3; // 距离
+	optional string weatherName=4; //天气名称
+	optional string alertLevelName=5; //预警名称
+}
+
+message ICC_arr_NaviWeatherInfo {
+	repeated ICC_strt_NaviWeatherInfo_1 naviWeatherInfo_1 = 1;
+}
+
+//SD地图导航天气信息
+message ICC_strt_NaviWeatherInfo {
+	optional int64 naviPathID=1; //路线ID
+	optional ICC_arr_NaviWeatherInfo naviWeatherInfo=2; //天气详细信息
+}
+
+//交通拥堵信息
+message ICC_strt_CongestionInfo {
+	optional uint32 timeOfSeconds=1; //预计通过该拥堵段的时长（单位:秒）
+	optional uint32 scopeFlag=2; //当前自车位置是否在拥堵区域内
+	optional int32 beginSegmentIndex=3; //拥堵段的起始导航段索引
+	optional int32 beginLinkIndex=4; //拥堵段的起始link段索引
+	optional string beginLinkRoadName=5; //拥堵段的起始link段的道路名
+	optional int32 beginSectionIndex=6; //拥堵段的起始精细化段索引
+	optional int32 endSegmentIndex=7; //拥堵段的结束导航段索引
+	optional int32 endLinkIndex=8; //拥堵段的结束link段索引
+	optional int32 endSectionIndex=9; //拥堵段的结束精细化段索引
+	optional uint32 congestionStatus=10; //拥堵程度 0x0: 道路状态未知 0x1: 道路通畅 0x2: 道路缓行 0x3: 道路阻塞 0x4: 严重拥堵 0x5: 结尾状态
+	optional uint32 remainDist=11; //当前剩余拥堵长度
+	optional uint32 beginExactLength=12; //起始段精细化段的距离，若为0表示起始段为非精细化段
+	optional int32 beginCoorIndex=13; //拥堵起点区域最近（拥堵起始点前）的形状点索引
+	optional uint32 endExactLength=14; //结束段精细化段的距离，若为0表示结束段为非精细化段
+	optional int32 endCoorIndex=15; //拥堵结束区域最近（拥堵结束点前）的形状点索引
+	optional uint32 beginExactLength3D=16; //3D起始段精细化段的距离，若为0表示起始段为非精细化段
+	optional ICC_strt_Coord3DDouble beginExactPoint3D=17; //3D拥堵区域的起始点真实坐标
+	optional int32 beginCoorIndex3D=18; //3D拥堵起点区域最近（拥堵起始点前）的形状点索引
+	optional uint32 endExactLength3D=19; //3D结束段精细化段的距离，若为0表示结束段为非精细化段
+	optional ICC_strt_Coord3DDouble endExactPoint3D=20; //3D拥堵区域的结束点真实坐标
+	optional int32 endCoorIndex3D=21; //3D拥堵结束区域最近（拥堵结束点前）的形状点索引
+	optional ICC_strt_Coord2DDouble beginExactPoint=22; //拥堵区域的起始点真实坐标
+	optional ICC_strt_Coord2DDouble endExactPoint=23; //拥堵区域的结束点真实坐标
+}
+
+message ICC_arr_CongestionInfo {
+	repeated ICC_strt_CongestionInfo congestionInfo=1;
+}
+
+//拥堵扩展信息
+message ICC_strt_CongestionExtend {
+	optional string congestionTrend=1; //拥堵趋势
+	optional string congestionAffect=2; //拥堵影响
+	optional string congestionCause=3; //拥堵原因
+	optional string congestionEventId=4; //拥堵事件ID
+	optional uint64 heavyTraffic=5; //是否为严重拥堵。拥堵长度大于800米且通行时间大于4分钟，透出1。否则为0。
+	optional string congestionId=6; //拥堵段 id
+}
+
+//SD地图导航交通拥堵信息
+message ICC_strt_NaviCongestionInfo{
+	optional uint64 congestionPathID=1; //路线ID
+	optional uint64 totalTimeOfSeconds=2; //预计通过拥堵时段时间
+	optional uint64 totalRemainDist=3; //拥堵剩余距离
+	optional uint32 unobstructed=4; //是否通畅 0x0: Unobstructed 0x1: Obstructed
+	optional ICC_arr_CongestionInfo congestionInfos=5; //拥堵时长和原因详细信息
+	optional ICC_strt_CongestionExtend congestionExtend=6; //拥堵扩展信息
+}
+
+//绿波车速
+message ICC_strt_NaviGreenWaveCarSpeed {
+	optional int64 greenWavePathId=1; //路线ID
+	optional int32 greenWaveType=2; //绿灯数量类型 0x0: 无效类型 0x1: 多灯类型 0x2: 单灯类型
+	optional int64 greenWaveMaxSpeed=3; //最大建议车速
+	optional int64 greenWaveMinSpeed=4; //最小建议车速
+	optional int64 remainLightCount=5; //剩余绿灯数量
+}
+
+//SD地图导航绿波车速信息
+message ICC_arr_NaviGreenWaveCarSpeed {
+	repeated ICC_strt_NaviGreenWaveCarSpeed greenWaveCarSpeeds=1; //绿波车速
+}
+
+//SD地图车道信息
+message ICC_strt_LaneInfo {
+	/**车道行为
+     * 0x0: LANE_ACTION_Ahead（直行）
+     * 0x1: LANE_ACTION_Left (左转）
+     * 0x2: LANE_ACTION_AheadLeft (直行+左转）
+     * 0x3: LANE_ACTION_Right（右转）
+     * 0x4: LANE_ACTION_AheadRight（直行+右转）
+     * 0x5: LANE_ACTION_LUTurn（左掉头）
+     * 0x6: LANE_ACTION_LeftRight（左转+右转）
+     * 0x7: LANE_ACTION_AheadLeftRight（直行+左转+右转）
+     * 0x8: LANE_ACTION_RUTurn（右掉头）
+     * 0x9: LANE_ACTION_AheadLUTurn（直行+左掉头）
+     * 0xA: LANE_ACTION_AheadRUTurn（直行+右掉头）
+     * 0xB: LANE_ACTION_LeftLUTurn（左转+左掉头）
+     * 0xC: LANE_ACTION_RightRUTurn（右转+右掉头）
+     * 0xD: LANE_ACTION_LeftInAhead（无效，保留）
+     * 0xE: LANE_ACTION_LeftLUturn（无效，保留）
+     * 0xF: LANE_ACTION_Reserved（保留）
+     * 0x10: LANE_ACTION_AheadLeftLUTurn（直行+左转+左掉头）
+     * 0x11: LANE_ACTION_RightLUTurn（右转+左掉头）
+     * 0x12: LANE_ACTION_LeftRightLUTurn（左转+右转+左掉头）
+     * 0x13: LANE_ACTION_AheadRightLUTurn（直行+右转+左掉头）
+     * 0x14: LANE_ACTION_LeftRUTurn（左转+右掉头）
+     * 0x15: LANE_ACTION_Bus（公交车道）
+     * 0x16: LANE_ACTION_Empty（空车道）
+     * 0x17: LANE_ACTION_Variable（可变车道）
+     * 0x18: LANE_ACTION_Dedicated（专用车道）
+     * 0x19: LANE_ACTION_Tidal（ 潮汐车道）
+     * 0x20-0xFE: Reserved（预留）
+     * 0xFF: LANE_ACTION_NULL（无对应车道）
+	 */
+	repeated uint32 backLanes=1; //背景车道 (巡航、导航都有效)
+	repeated uint32 frontLanes=2; //前景车道 (仅导航有效)
+	repeated uint32 optimalLane=3; //建议车道（仅在线导航有效）
+	
+	/**扩展车道行为:
+     * 0x0: EXTEN_LANE_ACTION_Normal (普通 ，即无扩展车道)
+     * 0x1: EXTEN_LANE_ACTION_Left (左扩展)
+     * 0x2: EXTEN_LANE_ACTION_Right (右扩展)
+     * 0x3-0x19: Reserved（预留）
+     * 0x1A: EXTEN_LANE_ACTION_LeftNarrow (左侧车道变窄)
+     * 0x1B: EXTEN_LANE_ACTION_RightNarrow (右侧车道变窄)
+     * 0x1C-0xFE: Reserved（预留）
+     * 0xFF: EXTEN_LANE_ACTION_NULL (无对应扩展车道)
+	 */	
+	repeated uint32 backExtenLanes=4; //背景扩展车道信息（巡航、导航都有效）
+	repeated uint32 frontExtenLanes=5; //前景扩展车道信息（无效字段）
+	repeated uint32 extensionLanes=6; //扩展车道信息（仅在线导航有效）
+	
+	/**车道类别:
+     * 0x0: LANE_TYPE_Normal (普通车道类型）
+     * 0x1: LANE_TYPE_Bus（公交专用车道类型）
+     * 0x2: LANE_TYPE_Other（其他专用道类型）
+     * 0x3: LANE_TYPE_Tidal（潮汐车道类型）
+     * 0x4: LANE_TYPE_Variable（可变车道类型）
+     * 0x5-0xFE: Reserved（预留）
+     * 0xFF: LANE_TYPE_NULL（无对应车道）
+	 */	
+	repeated uint32 frontLaneTypes=7; //前景分时车道类型（仅在线导航有效）
+	repeated uint32 backLaneTypes=8; //背景分时车道类型（仅在线导航有效）
+	
+	optional ICC_strt_Coord2DDouble lanePoint=9; //车道坐标点（仅巡航场景有效）
+	optional int32 laneSegmentIdx=10; //所在导航段索引（只有导航有效）
+	optional int32 laneLinkIdx=11; //所在link索引（只有导航有效）
+	optional uint64 lanetimestamp=12; //导航软件获取到车道信息的时间
+}
+
+//混淆路口
+message ICC_strt_MixForkInfoList {
+	optional uint32 mixForkDist=1; //混淆路口到导航点距离
+	optional ICC_strt_Coord2DDouble mixForkPos=2; //混淆路口的经纬度
+	optional int32 mixForkRoadClass=3; //混淆道路的roadclass
+	optional int32 mixForkSegmentIndex=4; //混淆道路所在segment索引
+}
+
+//SD地图混淆路口信息
+message ICC_arr_MixForkInfoList {
+	repeated ICC_strt_MixForkInfoList mixForkInfo=1;
+}
+
+//SD地图自车信息
+message ICC_strt_MyLocationInfo {
+	optional ICC_strt_Coord3DDouble myLocationCurrentPos=1; //自车经纬度
+	optional float myLocationSpeed=2; //自车车速 km/h
+}
+
+//SD地图导航状态信息
+message ICC_strt_NaviStatusBean{
+	optional int32 naviMode=1; //导航模式 0x0: NORMAL（非导航非巡航模式） 0x1: NAVI（真实导航模式）0x2: NAVI_SIM（模拟导航模式）0x3: CRUISE（巡航模式）0x4: ROUTE（规划）
+	optional int32 naviStatus=2; //导航状态  0x0: 默认状态 0x1: 导航进行中 0x2: 导航暂停
+}
+
+//SD地图TTS 播报信息
+message ICC_string_SoundInfo {
+	optional string soundName=1;
+}
+
+//SD地图偏航
+message ICC_int32_RouteOption {
+	/**偏航枚举
+     * 0x0: Unknown
+     * 0x1: RouteTypeCommon（直接算路）
+     * 0x2: RouteTypeYaw（偏航重算）
+     * 0x3: RouteTypeChangeStratege（切换策略重算）
+     * 0x4: RouteTypeParallelRoad（切换平行路重算）
+     * 0x5: RouteTypeTMC（躲避拥堵引起的重算）
+     * 0x6: RouteTypeLimitLine（道路限行引起的重算）
+     * 0x7: RouteTypeDamagedRoad（道路关闭引起的重算）
+     * 0x8: RouteTypePressure（暂时无用）
+     * 0x9: RouteTypeChangeJnyPnt（修改途经点重算）
+     * 0xA: RouteTypeUpdateCityData（更新城市数据引起的重算）
+     * 0xB: RouteTypeLimitForbid（限时禁行引起的重算（在线））
+     * 0xC: RouteTypeManualRefresh（手动刷新路线重算）
+     * 0xD: RouteTypeLimitForbidOffLine（限时禁行引起的重算（离线））
+     * 0xE: RouteTypeMutiRouteRequest（更新备选路重算）
+     * 0xF: RouteTypeAvoid（骑行导航中请求避让路线）
+     * 0x10: RouteTypeDispatch（交警调度引起的重算）
+     * 0x11: RouteTypeVoiceChangeDest (更换终点重算)
+     * 0x12-0x14: Reserved（预留）
+     * 0x15: RouteTypeSwitchMode（切换驾驶模式重算）
+     * 0x16: Reserved（预留）
+     * 0x17: RouteTypeVoiceAddViaPoint（语音追加途经点重算）
+     * 0x18: RouteTypeCustomSceneRoute（通勤定制路线算路）
+     * 0x19: RouteTypeAvoidRoadClose（避开前路重算）
+     * 0x1A: RouteTypeGroupChangeDest（组队更换终点重算）
+     * 0x1B: RouteTypeReturnOnSameWay（原路返回算路）
+     * 0x1C: RouteTypeChangeRouteCovertly（路线纠回引起的重算）
+	 */
+	optional int32 routeOption=1;
+}
+
+//SD地图巡航信息
+message ICC_strt_CruiseInfo {
+	optional string cruiseRoadName=1; //道路名称
+	optional int32 cruiseRoadClass=2; //当前自车所在道路等级"-1: FORMMAY_NULL（无效）;0x0: ROAD_CLASS_Freeway（高速公路）;0x1: ROAD_CLASS_NationalRoad（国道）;0x2: ROAD_CLASS_ProvinceRoad（省道）;0x3: ROAD_CLASS_CountyRoad（县道 ）;0x4: ROAD_CLASS_RuralRoad（乡公路）;0x5: ROAD_CLASS_InCountyRoad（县乡村内部道路）  ;0x6: ROAD_CLASS_CitySpeedway（主要大街、城市快速道）;0x7: ROAD_CLASS_MainRoad（主要道路）;0x8: ROAD_CLASS_SecondaryRoad（次要道路）;0x9: ROAD_CLASS_CommonRoad（普通道路）;0xA: ROAD_CLASS_NonNaviRoad（非导航道路）;0xB: ROAD_CLASS_Count（RoadClass的个数）  "
+}
+
+//SD地图导航道路信息
+message ICC_strt_NaviRoadInfo {
+	optional string naviRoadName=1; //道路名称
+	optional int32 naviRoadClass=2; //当前自车所在道路等级 "-1: FORMMAY_NULL（无效）;0x0: ROAD_CLASS_Freeway（高速公路）;0x1: ROAD_CLASS_NationalRoad（国道）;0x2: ROAD_CLASS_ProvinceRoad（省道）;0x3: ROAD_CLASS_CountyRoad（县道 ）;0x4: ROAD_CLASS_RuralRoad（乡公路）;0x5: ROAD_CLASS_InCountyRoad（县乡村内部道路）  ;0x6: ROAD_CLASS_CitySpeedway（主要大街、城市快速道）;0x7: ROAD_CLASS_MainRoad（主要道路）;0x8: ROAD_CLASS_SecondaryRoad（次要道路）;0x9: ROAD_CLASS_CommonRoad（普通道路）;0xA: ROAD_CLASS_NonNaviRoad（非导航道路）;0xB: ROAD_CLASS_Count（RoadClass的个数）  "
+	optional int32 navicurrentroadspd=3; //道路限速
+	optional int32 naviFormWay=4; //道路属性"-1: FORMMAY_NULL（无效）;0x0: Reserved（预留）;0x1: FORMMAY_DivisedLink（主路，上下线分离）;0x2: FORMMAY_CrossLink（复杂节点内部道路）;0x3: FORMMAY_JCT（JCT:连接不同道路道路或连接同一高速道路不同方向的匝道）;0x4: FORMMAY_RoundCircle（环岛）;0x5: FORMMAY_ServiceRoad（服务区:表示高速公路服务区的道路）;0x6: FORMMAY_SlipRoad（引路:连接高速道路与一般道路、连接一般道路与一般道路的道路）;0x7: FORMMAY_SideRoad（辅路）;0x8: FORMMAY_SlipJCT（引路+JCT:引路与JCT重合部分的道路）;0x9: FORMMAY_ExitLink（出口）;0xA: FORMMAY_EntranceLink（入口）;0xB: FORMMAY_TurnRightLineA（右转专用道）;0xC: FORMMAY_TurnRightLineB（右转专用道）;0xD: FORMMAY_TurnLeftLineA（左转专用道）;0xE: FORMMAY_TurnLeftLineB（左转专用道）;0xF: FORMMAY_CommonLink（普通道路）;0x10: FORMMAY_TurnLeftRightLine（左右转专用道:以不同道路为入口，既供车辆右转也供车辆左转使用的车道）;0x11-0x34: Reserved（预留）;0x35:  FORMMAY_ServiceJCTRoad（服务区+JCT:既是服务区内部道路也是连接高速道路与高速道路的JCT的道路）;0x36-0x37: Reserved（预留）;0x38: FORMMAY_ServiceSlipRoad（服务区+引路:既是服务区内部道路也是连接高速道路与一般道路的引路的道路）;0x39: Reserved（预留）;0x3A: FORMMAY_ServiceSlipJCTRoad（服务区+引路+JCT:同时是服务区内部道路、引路、JCT的道路）"
+}
+
+//SD地图前方车道信息列表
+message ICC_arr_AheadLaneInfoList {
+	repeated ICC_strt_LaneInfo laneInfo = 1;
+}
+
+//收费站信息
+message ICC_strt_TollGateInfo {
+	optional int32 tollGateExists=1; //收费站是否存在
+	optional int32 tollGateDistance=2; //收费站距离
+}
+
+//服务区信息
+message ICC_strt_ServiceAreaInfo {
+	optional int32 serviceAreaExists=1; //服务区是否存在
+	optional int32 serviceAreaDistance=2; // 服务区距离
+}
+
+//隧道信息
+message ICC_strt_TunnelInfo {
+	optional int32 tunnelExists=1; // 隧道是否存在
+	optional int32 tunnelDistance=2; //隧道距离
+	optional int32 tunnelLength=3; //隧道长度
+}
+
+//匝道信息
+message ICC_strt_RampInfo {
+	optional int32 rampExists=1; //匝道是否存在
+	optional int32 rampDistance1=2; //匝道距离
+	optional int32 rampDistance2=3; //匝道距离
+}
+
+//道路设施信息
+message ICC_strt_FacilityInfo {
+	optional ICC_strt_Coord2DDouble facilityCoord=1; //道路设施坐标
+  
+	/**道路设施类型:
+     * 0x0: FacilityTypeNULL
+     * 0x1: FacilityTypeLeftInterflow (左侧合流)
+     * 0x2: FacilityTypeRightinterflow (右侧合流)
+     * 0x3: FacilityTypeSharpTurn (急转弯)
+     * 0x4: FacilityTypeReverseTurn (反向转弯)
+     * 0x5: FacilityTypeLinkingTurn (连续转弯)
+     * 0x6: FacilityTypeAccidentArea (事故多发地)
+     * 0x7: FacilityTypeFallingRocks (注意落石)
+     * 0x8: FacilityTypeRailwayCross (铁路道口)
+     * 0x9: FacilityTypeSlippery (易滑)
+     * 0xA: FacilityTypeMaxSpeedLimit (最大限速标志)
+     * 0xB: FacilityTypeMinSpeedLimit (最小限速标志)
+     * 0xC: FacilityTypeVillage (村庄)
+     * 0xD: FacilityTypeLeftNarrow (左侧变窄)
+     * 0xE: FacilityTypeRightNarrow (右侧变窄)
+     * 0xF: FacilityTypeDoubleNarrow (两侧变窄)
+     * 0x10: FacilityTypeCrosswindArea (横风区)
+     * 0x11: FacilityTypeSchoolZone (前方学校)
+     * 0x12: FacilityTypeOvertakeForbid (禁止超车)
+     * 0x13: FacilityTypeNarrowBridge (窄桥)
+     * 0x14: FacilityTypeDoubleDetour (左右绕行)
+     * 0x15: FacilityTypeLeftDetour (左侧绕行)
+     * 0x16: FacilityTypeRightDetour (右侧绕行)
+     * 0x17: FacilityTypeLeftDangerous (左侧傍山险路)
+     * 0x18: FacilityTypeRightDangerous (右侧傍山险路)
+     * 0x19: FacilityTypeUpperSteep (上陡坡)
+     * 0x1A: FacilityTypeDownSteep (下陡坡)
+     * 0x1B: FacilityTypeWaterPavement (过水路面)
+     * 0x1C: FacilityTypeIrregularityPavement (路面不平)
+     * 0x1D: FacilityTypeAmble (慢行)
+     * 0x1E: FacilityTypeAttentionDanger (注意危险)
+     * 0x1F: FacilityTypeZebraCrossing (人行横道)
+     * 0x20-0x2D: Reserved (预留)
+     * 0x2E: FacilityTypeLeftSharpTurn (左急转弯)
+     * 0x2F: FacilityTypeRightSharpTurn (右急转弯)
+     * 0x30: FacilityTypeLeftFallingRocks (注意左侧落石)
+     * 0x31: FacilityTypeRightFallingRocks (注意右侧落石)
+     * 0x32: FacilityTypeRailwayCrossExtend (铁道路口)
+     * 0x33: FacilityTypeRailwayWithGates (有人看管的铁道路口)
+     * 0x34: FacilityTypeRailwayWithoutGates (无人看管的铁道路口)
+     * 0x35: FacilityTypeVariableSpeed (可变限速标志)
+     * 0x36-0x39: Reserved (预留)
+     * 0x3A: FacilityTypeVariableOverPass (天桥)
+     * 0x3B-0x50: Reserved (预留)
+     * 0x51: FacilityTypeTruckHeightLimit (货车限高)
+     * 0x52: FacilityTypeTruckWidthLimit (货车限宽)
+     * 0x53: FacilityTypeTruckWeightLimit (货车限重)
+     * 0x54-0x5A: Reserved (预留)
+     * 0x5B: FacilityTypeCheckPoint (货车检查站(数据里存32))
+     * 0x5C: FacilityTypeBusLane (公交车道设施)
+	 */  
+	optional int32 facilityType=2;
+  
+	optional int32 facilityDistance=3; //道路设施距离
+}
+
+//定位信息
+message ICC_strt_LocMatchInfo {
+	optional int32 formway=1; //匹配方式 "-1: FORMMAY_NULL（无效）;0x0: Reserved（预留）;0x1: FORMMAY_DivisedLink（主路，上下线分离）;0x2: FORMMAY_CrossLink（复杂节点内部道路）;0x3: FORMMAY_JCT（JCT:连接不同道路道路或连接同一高速道路不同方向的匝道）;0x4: FORMMAY_RoundCircle（环岛）;0x5: FORMMAY_ServiceRoad（服务区:表示高速公路服务区的道路）;0x6: FORMMAY_SlipRoad（引路:连接高速道路与一般道路、连接一般道路与一般道路的道路）;0x7: FORMMAY_SideRoad（辅路）;0x8: FORMMAY_SlipJCT（引路+JCT:引路与JCT重合部分的道路）;0x9: FORMMAY_ExitLink（出口）;0xA: FORMMAY_EntranceLink（入口）;0xB: FORMMAY_TurnRightLineA（右转专用道）;0xC: FORMMAY_TurnRightLineB（右转专用道）;0xD: FORMMAY_TurnLeftLineA（左转专用道）;0xE: FORMMAY_TurnLeftLineB（左转专用道）;0xF: FORMMAY_CommonLink（普通道路）;0x10: FORMMAY_TurnLeftRightLine（左右转专用道:以不同道路为入口，既供车辆右转也供车辆左转使用的车道）;0x11-0x34: Reserved（预留）;0x35:  FORMMAY_ServiceJCTRoad（服务区+JCT:既是服务区内部道路也是连接高速道路与高速道路的JCT的道路）;0x36-0x37: Reserved（预留）;0x38: FORMMAY_ServiceSlipRoad（服务区+引路:既是服务区内部道路也是连接高速道路与一般道路的引路的道路）;0x39: Reserved（预留）;0x3A: FORMMAY_ServiceSlipJCTRoad（服务区+引路+JCT:同时是服务区内部道路、引路、JCT的道路）"
+	optional int32 linkType=2; //匹配类型"-1: LinkTypeNull (无效);0x0: LinkTypeCommon (普通道路);0x1: LinkTypeFerry (航道);0x2: LinkTypeTunnel (隧道);0x3: LinkTypeBridge (桥梁);0x4: LinkTypeElevatedRd (高架路);0x5: LINK_TYPE_Count (LinkType的个数)"
+	optional int32 ownerShip=3; //匹配关系"-1: AUTO_UNKNOWN_ERROR (非法操作错误);0x0: OwnershipPublicRoad (公开道路);0x1: OwnershipInternalRoad (内部道路);0x2: OwnershipPrivateRoad (私有道路);0x3: OwnershipUndergroundParkRoad (地下停车场道路);0x4: Ownership3DParkRoad (3D停车场道路)"
+	optional int32 roadClass=4; //道路等级"-1: FORMMAY_NULL（无效）;0x0: ROAD_CLASS_Freeway（高速公路）;0x1: ROAD_CLASS_NationalRoad（国道）;0x2: ROAD_CLASS_ProvinceRoad（省道）;0x3: ROAD_CLASS_CountyRoad（县道 ）;0x4: ROAD_CLASS_RuralRoad（乡公路）;0x5: ROAD_CLASS_InCountyRoad（县乡村内部道路）  ;0x6: ROAD_CLASS_CitySpeedway（主要大街、城市快速道）;0x7: ROAD_CLASS_MainRoad（主要道路）;0x8: ROAD_CLASS_SecondaryRoad（次要道路）;0x9: ROAD_CLASS_CommonRoad（普通道路）;0xA: ROAD_CLASS_NonNaviRoad（非导航道路）;0xB: ROAD_CLASS_Count（RoadClass的个数）  "
+	optional int32 currentRoadSpeed=5; //当前道路限速  单位：km/h
+	optional string roadName=6; //道路名称
+}
+
+message Strt_TollGateLaneInfo{
+
+  optional int32 TollLaneType = 1;//收费站通道类型
+
+
+  /**收费站通道类型
+    0x0: TollLaneTypeNULL (无效值)
+    0x1: TollLaneTypeNormal (支持普通收费车道)
+    0x2: TollLaneTypeETC (支持ETC收费车道)
+    0x4: TollLaneTypeAutomatric (支持自动发卡车道)
+    0x8: TollLaneTypeAliPay (支持支付宝收费车道)
+    0x10: TollLaneTypeWechatPay (支持微信支付车道)
+    0x20: TollLaneTypeITC (支持ITC收费车道)
+  */
+}
+
+//收费站通道信息
+message Arr_TollGateLaneInfo{
+  repeated Strt_TollGateLaneInfo toll_gate_lane_info = 1;
+}
+
+
+//导航终点信息
+message Enum_NavArriveAim{
+
+  optional int32  Nav_Arrive_Aim = 1;//0x0: NAVI（真实导航）;0x1: NAVI_SIM（模拟导航)
+
+}
+
+
+//SDmap数据message整合
+message SDmap_Info{
+	optional ICC_string_RouteInfo ntfSDmapRouteInfo = 1; //SD地图导航Route信息
+	optional ICC_strt_NaviInfo ntfSDmapTBTNaviInfo = 2; //SD地图导航实时信息
+	optional ICC_strt_NaviCameraExt ntfSDmapNaviCameraInfo = 3; //SD地图导航电子眼信息
+	optional ICC_strt_CruiseFacilityInfo ntfSDmapCruiseFacilityInfo = 4; //SD地图巡航电子眼信息
+	optional ICC_arr_TrafficLightCountdown ntfSDmapTrafficLightCDInfo = 5; //SD地图红绿灯倒计时信息
+	optional ICC_arr_NaviIntCameraDynInfo ntfSDmapNaviIntCamDynInfo = 6; //SD地图导航区间测速电子眼实时动态信息
+	optional ICC_strt_NaviWeatherInfo ntfSDmapNaviWeatherInfo = 7; //SD地图导航天气信息
+	optional ICC_strt_NaviCongestionInfo ntfSDmapNaviCongestionInfo = 8; //SD地图导航交通拥堵信息
+	optional ICC_arr_NaviGreenWaveCarSpeed naviGreenWaveCarSpeeds = 9; //绿色波车速信息
+	optional ICC_strt_LaneInfo laneInfo = 10; //线路信息
+	optional ICC_arr_MixForkInfoList mixForkInfoList = 11; //混合路口信息
+	optional ICC_strt_MyLocationInfo myLocationInfo = 12; //我的位置信息
+	optional ICC_strt_NaviStatusBean naviStatusBean = 13; //导航状态信息
+	optional ICC_string_SoundInfo soundInfo = 14; //语音信息
+	optional ICC_int32_RouteOption routeOption = 15; //路线选项信息
+	optional ICC_strt_CruiseInfo cruiseInfo = 16; //巡航信息
+	optional ICC_strt_NaviRoadInfo naviRoadInfo = 17; //SD地图导航道路信息
+	optional ICC_arr_AheadLaneInfoList aheadLaneInfoList = 18; // SD地图前方车道信息列表
+	optional ICC_strt_TollGateInfo tollGateInfo = 19; //收费站信息
+	optional ICC_strt_ServiceAreaInfo serviceAreaInfo = 20; //服务区信息
+	optional ICC_strt_TunnelInfo tunnelInfo = 21; //隧道信息
+	optional ICC_strt_RampInfo rampInfo = 22; //匝道信息
+	optional ICC_strt_FacilityInfo facilityInfo = 23; //道路设施信息
+	optional ICC_strt_LocMatchInfo locMatchInfo = 24; //定位信息
+  optional Arr_TollGateLaneInfo tollGateLaneInfo = 25;//收费站通道信息
+  optional Enum_NavArriveAim navArriveAim = 26;//导航终点信息
+
+}
+
+
+
+
+//***********************SDmap服务定义**********************//
+service Chery_SDmap_Service{
+
+  //***********************0xAC0C**********************//
+  // -----------------------------------------------------------//
+  // SD地图导航Route信息
+  rpc NtfSDmapRouteInfo ( SDmap_Info ) //ICC_string_RouteInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航实时信息
+  rpc NtfSDmapTBTNaviInfo ( SDmap_Info ) //ICC_strt_NaviInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航电子眼信息
+  rpc NtfSDmapNaviCameraInfo ( SDmap_Info ) //ICC_strt_NaviCameraExt
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图巡航电子眼信息
+  rpc NtfSDmapCruiseFacilityInfo ( SDmap_Info ) //ICC_strt_CruiseFacilityInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图红绿灯倒计时信息
+  rpc NtfSDmapTrafficLightCDInfo ( SDmap_Info ) //ICC_arr_TrafficLightCountdown
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航区间测速电子眼实时动态信息
+  rpc NtfSDmapNaviIntCamDynInfo ( SDmap_Info ) //ICC_arr_NaviIntCameraDynInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航天气信息
+  rpc NtfSDmapNaviWeatherInfo ( SDmap_Info ) //ICC_strt_NaviWeatherInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航交通拥堵信息
+  rpc NtfSDmapNaviCongestionInfo ( SDmap_Info ) //ICC_strt_NaviCongestionInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航绿波车速信息
+  rpc NtfSDmapNaviGreenWaveCarSpd ( SDmap_Info ) //ICC_arr_NaviGreenWaveCarSpeed
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图车道信息
+  rpc NtfSDmapLaneInfo ( SDmap_Info ) //ICC_strt_LaneInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图混淆路口信息
+  rpc NtfSDmapMixForkInfo ( SDmap_Info ) //ICC_arr_MixForkInfoList
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图自车信息
+  rpc NtfSDmapMyLocationInfo ( SDmap_Info ) //ICC_strt_MyLocationInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航状态信息
+  rpc NtfSDmapNaviStatusInfo ( SDmap_Info ) //ICC_strt_NaviStatusBean
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图TTS 播报信息
+  rpc NtfSDmapSoundInfo ( SDmap_Info ) //ICC_string_SoundInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图偏航
+  rpc NtfSDmapRouteOption ( SDmap_Info ) //ICC_int32_RouteOption
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图巡航信息
+  rpc NtfSDmapCruiseInfo ( SDmap_Info ) //ICC_strt_CruiseInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图导航道路信息
+  rpc NtfSDmapNaviRoadInfo ( SDmap_Info ) //ICC_strt_NaviRoadInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // SD地图前方车道信息列表
+  rpc NtfSDmapAheadLaneInfo ( SDmap_Info ) //ICC_arr_AheadLaneInfoList
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 收费站信息
+  rpc NtfSDmapTollGateInfo ( SDmap_Info ) //ICC_strt_TollGateInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 服务区信息
+  rpc NtfSDmapServiceAreaInfo ( SDmap_Info ) //ICC_strt_ServiceAreaInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 隧道信息
+  rpc NtfSDmapTunnelInfo ( SDmap_Info ) //ICC_strt_TunnelInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 匝道信息
+  rpc NtfSDmapRampInfo ( SDmap_Info ) //ICC_strt_RampInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 道路设施信息
+  rpc NtfSDmapFacilityInfo ( SDmap_Info ) //ICC_strt_FacilityInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 定位信息
+  rpc NtfSDmapLocMatchInfo ( SDmap_Info ) //ICC_strt_LocMatchInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 收费站通道信息
+  rpc NotifySDmapTollGateLaneInfo ( SDmap_Info ) //Arr_TollGateLaneInfo
+  returns (chery_response);
+
+  // -----------------------------------------------------------//
+  // 导航终点信息
+  rpc NotifySDmapNavArriveAim ( SDmap_Info ) //Enum_NavArriveAim
+  returns (chery_response);
+
+}
+

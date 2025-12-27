@@ -1,0 +1,1628 @@
+syntax = "proto3";
+
+package chery.ads.prompt.infomation;
+
+
+// 请求消息
+message chery_request {
+  optional uint32 chery_request_status = 1;  //0x0：请求成功   0x1：请求失败
+}
+
+// 响应消息
+message chery_response {
+  optional uint32 chery_response_status = 1;  //0x0：响应成功   0x1：响应失败
+}
+
+
+/************************行车功能提示*********************************/
+
+//ACC功能输出信息
+message ADAS_strt_ACCInfo {
+	optional uint32 ACCSts = 1;//ACC功能状态
+	/*
+	0x0:  Off 
+    0x1:  Passive 
+    0x2:  Standby 
+    0x3:  Active_Control 
+    0x4:  Brake Only 
+    0x5:  Override 
+    0x6:  Stand Wait 
+    0x7:  failure 
+    0X8:  Stand Active
+	*/
+	optional uint32 AutoResumeNotifier = 2; //巡航自动恢复提示 0x0:None 0x1:Resume Notifier
+	optional uint32 SetSpeed = 3;//巡航车速
+	optional uint32 SetSpeedUnit = 4; //巡航车速单位"0x0: Km/h 0x1: Mile/h"
+	optional uint32 TimeGapSet = 5; //跟车时距 0x0:None 0x1:Time Gap1 0x2: Time Gap2 0x3: Time Gap3 0x4: Time Gap4 0x5: Time Gap5
+	optional uint32 LongitudinalTakeOverRequest = 6; 
+	/*接管请求
+       0x0: No Request
+       0x1: Request
+       0x2: Request_cone_zone
+       0x3: Prewarning_general
+       0x4: Prewarning_constrcution_sign
+       0x5: Prewarning_ramp_narrow
+       0x6: Toll Station reminder
+       0x7: traffic jam reminder
+       0x8: traffic jam warning
+       0x9-0xFE: Reserved
+	*/
+
+	optional uint32 ACCGoNotifier = 7; //起步提醒"0x0:None 0x1:Go Notifier 0x2:Go Visual Notifier 0x3:Handson visual warning 0x4:Handson and DMS warning  0x5:Press gas reminder"
+
+	/**ACC提示信息:
+        0x0: No Display
+        0x1: ACC Activated
+        0x2: ACC Cannot Be Activated
+        0x3: ACC Cancelled
+        0x4: ACC failure
+        0x5: Weather abnormal
+        0x6: Driver Override
+        0x7: Active Decelerate
+        0X8: Cruise speed can not be added
+        0x9: ACC abort and take over request
+        0xA: Maximum decelerate to ahead speed sign
+        0xB: System add timegap to front big vehicle 
+        0xC: Cut in reminder
+        0xD: Large curve remider
+        0xE: Auto drive off reminder
+        0xF: Traffic jam confirm
+        0x10: Traffic jam on
+        0x11: Traffic jam off
+        0x12: Follow traffic speed
+        0x13: Request confirm follow TSR speed
+        0x14: ACC Stand Wait
+        0x15: Complex road condition
+        0x16: Request confirm follow TSR higher speed
+        0x17: Request confirm follow TSR Lower speed
+        0x18: ACC cannot be activated - Seatbelt not fastened（安全带未系紧，无法激活ACC）
+        0x19: ACC cannot be activated - Door not closed（门未关，无法激活ACC）
+        0x1A: ACC cannot be activated - Not in D gear（不在D档，无法激活ACC）
+        0x1B: ACC cannot be activated - Electronic parking brake activated（电子驻车启动，无法激活ACC）
+        0x1C: ACC about to exit - Continuous intervention on the accelerator pedal（正在持续干扰加速踏板，ACC功能退出）
+        0x1D: ADAS will restart shortly(系统即将重启）
+        0x1E: ADAS activated,restarting is not allowed（系统正在运行，暂时无法重启）
+        0x1F: IMU not calibration(系统未标定）
+        0x20: IMU is in calibration(系统标定中）
+        0x21: IMU calibration succeed (系统标定完成）
+        0x22: Wiper cleaning request(雨刷请求清洁)
+        0x23: Wiper cleaning auto(雨刷自动清洁)
+        0x24: ESC/ABS/TCS/EBD Actived(车辆不稳定激活失败)
+        0x25: over speed (over speed)
+        0x26: Release the brake pedal(踩制动激活失败)
+        0x27: Abnormal tire pressure(胎压故障激活失败)
+        0x28-0xFE: Reserved
+	 */
+	optional uint32 ACCTextMessage = 8;//ACC提示信息
+	
+	optional uint32 ACCQuitReason = 9;//ACC退出原因0x0 : None 0x1 : Bad Weather 0x2 : Large curve 0x3-0x7: reserved
+	optional uint32 FSRACruiseSpdModFb = 10; //初始巡航车速模式反馈"0x0:Current speed mode 0x1: ISLI mode"
+	optional uint32 FSRACruiseSpdOffsetModFb = 11; //初始巡航车速偏差模式反馈"0x0:fixed 0x1:  percent"
+	optional int32  SetACCSetSpdOffset = 12; //巡航车速固定值offset值反馈
+	optional int32  SetACCSetSpdPercOffset = 13; //巡航车速百分比offcet值反馈
+	optional uint32 ACCholdSts = 14; //巡航保压状态"0x0: Not active 0x1:Active"
+	optional uint32 FSRASpdSetMod = 15; //巡航车速开关调节模式反馈"0x0:Mode1（短按+5）0x1: Mode2（短按+1）"
+	optional uint32 FDMSt = 16; //"0x0:ON 0x1:Off 0x2:failure 0x3:   reserved" 前车距离检测功能反馈
+	optional uint32 FDMDist = 17; // 前车距离检测距离值反馈
+	optional uint32 CruiseAccelerateSts = 18; //巡航跟车加减速状态指示0x0: None 0x1: Accelerating 0x2: Decelerating
+	//原ADAS_strt_ACCSupplementInfo
+	optional int32 ACCVoiceReminder =19; // 巡航速度和距离调节语音提醒
+	/*
+        0x0: No voice reminder
+        0x1: Unable to execute due to collision
+        0x2: Unable to execute due to ADAS system exception
+        0x3: Temporarily unable to execute the operation
+        0x4: Unable to execute due to function not enabled
+        0x5: Unable to execute due to exceeding the speed range 
+        0x6: The cruise speed has been adjusted to XX（数值按信号ADAS_val_SetSpd）
+        0x7: The cruise distance has been adjusted to XX（数值按信号ADAS_enum_TimeGapSet）
+        0x8-0xFE: Reserved
+	*/
+	optional int32 SceneSts =20; //行泊切换状态机
+	/*
+	   0x0: OFF
+       0x1: Driving
+       0x2: Parking APA
+       0x3: Parking HPA
+       0x4-0xFE: Reserved
+	*/
+}
+
+//ICA 功能输出状态
+message ADAS_strt_ICAInfo {
+	optional uint32 ICASts = 1; //ICA 工作状态"0x0: Off 0x1: Passive 0x2: Stanby 0x3: Active 0x4: Failure 0x5: Suspend 0x6: SafeStop"
+
+	/**ICA 提示信息：
+         0x0: No dispaly
+         0x1: TJAICA Activated
+         0x2: TJAICA Cannot Be Activated
+         0x3: TJAICA Cancelled
+         0x4: TJAICA failure
+         0x5: TJAICA Suspend
+         0x6: TJAICA resumed
+         0x7: TJAICA degrade to ACC
+         0x8: Handsoff  punishment
+         0x9: uncentered 
+         0xA: Too Large curve
+         0xB: Abnormal tire pressure
+         0xC: Camera block
+         0xD:Intersection deceleration
+         0xE:Brake stop
+         0xF:Traffic light warning
+         0x10:Green light drive off
+         0x11:Turn manual driving
+         0x12: Outgoing delivery is not allowed（影响HUD显示，不允许ADCC或者FCM外发）
+         0x13: Bypass fault warning
+         0x14: Rear vehicle warning
+         0x15: Unknown turntype warning
+         0x16: Driving follow the traffic flow
+         0x17: Switch off（The switch is not on,LCC can't be activated temporarily 开关未打开，车道居中辅助LCC暂不可用）
+         0x18: Cannot merge into the main road(汇入主路_请求接管)
+         0x19: DMS Blockage Activation Failed (DMS遮挡导致激活失败)
+         0x1A: Narrow road ahead, slow down immediately (LCC窄路速度过高)
+         0x1B-0xFE: Reserved
+	 */	
+	optional uint32 ICATextInfo = 2;//ICA 提示信息
+	/*ICA 退出原因
+        0x0: None
+        0x1: Bad Weather
+        0x2: Large curve
+        0x3: ODD not meet
+        0x4: LCC failure(LCC被动退出-故障)
+        0x5: DMS Blockage Exit(DMS遮挡导致功能退出)
+        0x6-0xFE: reserved
+	*/
+	optional uint32 ICAQuitReason = 3; //ICA 退出原因
+
+	/**ICA场景提示：
+	 * 0x0: No dispaly
+	 * 0x1: Accident Vehilce
+	 * 0x2: Obstacle ahead
+	 * 0x3: Y type intersection in front
+	 * 0x4: PrePare_ALC_Left 
+	 * 0x5: PrePare_ALC_Right
+	 * 0x6: Ongoing_ALC_Left
+	 * 0x7: Ongoing_ALC_Right 
+	 * 0x8: Solid line suppression
+	 * 0x9: Vehicle suppression
+	 * 0xA: Waiting Lane changing
+	 * 0xB: Waiting for timeout cancel
+	 * 0xC: Vehicle speed too low
+	 * 0xD: Turn off the turn signal
+	 * 0xE: Interfering with the steering wheel
+	 * 0xF: LC suppression
+	 * 0x10: Driver manual steering is required
+	 * 0x11-0xFE: Reserved
+	 */	
+	optional uint32 ICASenarioReminder = 4; //ICA场景提示
+	
+	optional uint32 ICAPlusONOFFSts = 5; //ICAPlus开关状态 "0x0: No action 0x1: ON 0x2: Off"
+	optional uint32 HandsOffWarningStyle = 6;//脱手报警风格0x0: No action 0x1: Standard 0x2: Comfortable 0x3: Reserved
+	optional uint32 TrafficLightAssistBtnStFb = 7;//红绿灯辅助设置反馈0x0: None 0x1: On 0x2: Off 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 DetourAroundObstacleBtnStFb = 8;//借道绕行障碍物设置反馈0x0: None 0x1: On 0x2: Off 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 EfficientPassageBtnStFb = 9;//高效通行软开关设置反馈0x0: None 0x1: On 0x2: Off 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 IntelligentEvasionBtnStFb = 10;//智慧躲闪软开关设置反馈0x0: None 0x1: On 0x2: Off 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 RADSEnableBtnStFb = 11;//循迹倒车设置反馈0x0: None 0x1: On 0x2: Off 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 OutsideParkingBtnStFb = 12;//离车泊入开关设置反馈0x0: None 0x1: On 0x2: Off 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 RGearDefaultFunctionBtnStFb = 13;//R挡默认打开项设置反馈0x0: None 0x1: Auto Parking 0x2: Reverse Camera 0x3: Failure 0x4-0xFE: Reserved
+	optional uint32 ICAConfidence = 14;//ICA置信度 0x0: None 0x1: Level_1 0x2: Level_2 0x3: Level_3 0x4-0xFE: Reserved
+	optional uint32	TollStationPathStFb = 15; // 收费通道选择状态 0x0: Not Active 0x1: Manual Path  0x2: ETC Path 0x3: Reserved 新增
+}
+
+//ALC 功能输出信息
+message ADAS_strt_ALCInfo {
+	/**拨杆变道功能状态：
+	 * 0x0: Off
+	 * 0x1: Inhibited
+	 * 0x2: Enable
+	 * 0x3: Wait
+	 * 0x4: Lane changing
+	 * 0x5: lane changed
+	 * 0x6: Abort
+	 * 0x7: Retreating
+	 * 0x8:  Retreated
+	 * 0x9: Lane Change Prepare
+	 * 0xA: Lane Change Longitudinal Matching
+	 * 0xB: Failure
+	 */
+	optional uint32 ALCStatus = 1;
+	
+	optional uint32 ALCDirIndicator = 2; //拨杆变道方向0x0: None 0x1: Left 0x2: Right
+
+	/**变道退出原因：
+	 * 0x0: no abort
+	 * 0x1: inner line not dash
+	 * 0x2: outter line not detected
+	 * 0x3: road curvature over range
+	 * 0x4: target lane block
+	 * 0x5: speed over range
+	 * 0x6: driver override steering wheel
+	 * 0x7: driver pull off indicator
+	 * 0x8: driver turn on hazard lamp
+	 * 0x9: driver turn ILC off
+	 * 0xA:Exceed wait working
+	 * 0xB: ICA not working
+	 * 0xC: system fail
+	 * 0xD: Threat too high
+	 * 0xE: Reserved
+	 */	 
+	optional uint32 ALCAbortReason = 3;
+	
+	optional uint32 ALCSoundWarn = 4; //变道声音报警 0x0: No warning;0x1: Abort warning;0x2: Active warning;0x3: Cancel warning;0x4: TOR warning
+
+	/**
+     *0x0: No dispaly
+     *0x1: Lane changing cancel 
+     *0x2: ALC can't be activated
+     *0x3: Lane changing finished
+     *0x4: PrePare_ALC_Left 
+     *0x5: PrePare_ALC_Right
+     *0x6: Ongoing_ALC_Left
+     *0x7: Ongoing_ALC_Right 
+     *0x8: Recommend Driver_LC_Left
+     *0x9: Recommend Driver_LC_Right
+     *0xA: Solid line suppression(预留)
+     *0xB: Vehicle suppression(预留)
+     *0xC: LC suppression
+     *0xD: Waiting Lane changing
+     *0xE: LC cancel for waiting timeout
+     *0xF: LC cancel for vehicle speed too low
+     *0x10: LC canceled，turn off the turn light
+     *0x11: LC finished，turn off the turn light
+     *0x12: LC Abort
+     *0x13: PrePare enter ramp
+     *0x14: Enter ramp finished
+     *0x15: PrePare enter main road
+     *0x16: PrePare lane Merge 
+     *0x17: Takeover request for lane changing fail
+     *0x18: Takeover request for lane merge or lane split fail
+     *0x19: Lane change left for overtaking
+     *0x1A: Lane change right for overtaking
+     *0x1B: Navigation based lane change left
+     *0x1C: Navigation based lane change right
+     *0x1D: Evasive lane change left
+     *0x1E: Evasive lane change right
+     *0x1F: Confirm overtaking lane change left with stalk
+     *0x20: Confirm overtaking lane change right with stalk
+     *0x21: Confirm overtaking lane change left with button
+     *0x22: Confirm overtaking lane change right with button
+     *0x23: LCC cannot be activated - on a sharp curve（LCC无法激活--在一个陡峭的曲线上）
+     *0x24: LCC cannot be activated - heavy rainfall（LCC无法激活-强降雨）
+     *0x25: Moving away from adjacent vehicle（远离相邻车辆）
+     *0x26: Avoiding obstacle（避免障碍）
+     *0x27: Be aware of vehicle detour（注意车辆绕行）
+     *0x28: Emergency deceleration in progress（正在进行紧急减速）
+     *0x29: Merge onto the main road（合并到主干道上）
+     *0x2A: Passing through a narrow road（穿过一条狭窄的道路）
+     *0x2B: Traffic Jam Assist activated（交通阻塞辅助系统启动）
+     *0x2C: Traffic Jam Assist deactivated（交通堵塞辅助已关闭）
+     *0x2D: Please take over - Left turn ahead（请接管-前面左转）
+     *0x2E: Please take over - Right turn ahead（请接管-前方右转）
+     *0x2F: LCC about to exit - Continuous intervention on the accelerator pedal（LCC即将退出-持续踩油门干预）
+     *0x30: Continuous intervention on the accelerator pedal（持续踩油门踏板）
+     *0x31: Please turn on the LCC switch（请打开LCC开关）
+     *0x32-0xFE: Reserved
+	*/
+	optional uint32 ALCTextInfomation = 5; //变道提示信息
+
+	optional uint32 ALCTakeOverRequest = 6; //变道接管请求 0x0: No Request;0x1: Request
+	optional uint32 ALCPermitSt = 7; //拨杆变道允许状态 0x0: Permit;0x1: Not permit
+	optional float ALCDestPoseX = 8; //变道目标车位框中心X坐标
+	optional float ALCDestPoseY = 9; //变道目标车位框中心Y坐标
+	optional float ALCDestPoseHeading = 10; //变道目标车位框航向角
+}
+
+message ADAS_strt_TrafficLight
+{
+	optional uint64 trafficLightId = 1; //交通灯ID
+	optional uint32 trafficLightType = 2; //交通灯类型 0x0: None 0x1: left turn 0x2: straight 0x3: right turn 0x4: U turn
+	optional uint32 trafficLightColor = 3; //交通灯颜色 0x0: None 0x1: Green 0x2: Green Flashing_Reserved 0x3: Yellow 0x4: Yellow Flashing 0x5: Red 0x6: Red Flashing 0x7: Unknown
+	optional uint32 remainingTime = 4; //交通灯剩余时间 单位秒
+	optional float TrafficLightPosX = 5; //交通灯位置X
+	optional float TrafficLightPosY = 6; //交通灯位置Y
+	optional float TrafficLightPosZ = 7; //交通灯位置Z
+}
+
+//红绿灯数组
+message ADAS_arr_TrafficLight
+{
+	repeated ADAS_strt_TrafficLight traffic_lights = 1;
+}
+
+
+message ADAS_strt_DrivingTrajectoryPoint
+{
+	optional float TrajectoryPointX = 1; //轨迹形点X坐标
+	optional float TrajectoryPointY = 2; //轨迹形点Y坐标
+	optional float TrajectoryPointZ = 3; //轨迹形点Z坐标
+}
+
+//轨迹点位置
+message ADAS_arr_DrivingTrajectoryPointList {
+
+	repeated  ADAS_strt_DrivingTrajectoryPoint  driving_trajectory_points = 1;
+
+}
+
+//引导面/引导线行点
+message ADAS_strt_DrivingTrajectoryPointList {
+	int32  DrivingTrajectoryPointNum = 1;//轨迹形点个数
+	optional ADAS_arr_DrivingTrajectoryPointList DrivingTrajectoryPointList = 2;//轨迹形点数组
+
+}
+
+//决策引导线点信息
+message ADAS_strt_TrajectoryPoint
+{
+	optional float Coordinate_X = 1; //X坐标
+	optional float Coordinate_Y = 2; //Y坐标
+	//optional float Coordinate_Z = 3; //Z坐标
+}
+
+//决策引导线数组
+message ADAS_arr_TrajectoryPoint
+{
+	repeated ADAS_strt_TrajectoryPoint trajectory_points = 1;
+}
+
+
+
+
+//高速领航辅助功能输出信息
+message ADAS_strt_HNOPfunctionInfo {
+	/**
+	 * 0x0: Off
+	 * 0x1: Passive
+	 * 0x2: Ready
+	 * 0x3: Active control
+	 * 0x4: Longitudinal Suspend
+	 * 0x5: TOR
+	 * 0x6: Safe stop
+	 * 0x7: Failure
+	 * 0x8:  Lateral Suspend
+	 */
+	optional uint32 HNOPSts = 1; //高速领航辅助状态
+
+	optional uint32 NOPLaneChangeMod = 2; //0x0: No action 0x1: Driver Confirmed lane change 0x2: Automatic Lane Change 领航辅助变道模式
+	optional uint32 NOPLaneChangeStyle = 3;//"0x0: No action 0x1: Basic 0x2: Normal 0x3: Radical" 领航辅助速控模式
+
+	/**
+	 * 0x0: None
+	 * 0x1: PrePare_ALC_Left
+	 * 0x2: PrePare_ALC_Right
+	 * 0x3: Ongoing_ALC_Left
+	 * 0x4: Ongoing_ALC_Right
+	 * 0x5: Cancel_ALC
+	 * 0x6: Request Driver_LC_Left
+	 * 0x7: Request Driver_LC_Right
+	 * 0x8: LC finished
+	 * 0x9: Request Driver LC
+	 * 0xA: LC_Left not available
+	 * 0xB: LC_Right not available
+	 * 0xC: Lane Merge left
+	 * 0xD: Lane Merge right
+	 * 0xE: Lane Split left 0xF: Lane Split right
+	 */
+	optional uint32 NOPLaneChangeInfo = 4; //领航辅助变道状态信息
+
+	optional uint32 SafeStopReminder = 5; //"0x0: None 0x1:SafeStopActivatedInCurrentIgnition" //领航辅助执行安全停车提示
+
+	/**
+	 * 0x0 : None
+	 * 0x1: Driver condition not meet
+	 * 0x2: Driver Intervention
+	 * 0x3: Vehicle condition not meet
+	 * 0x4: System Failure
+	 * 0x5: Other Function Active
+	 * 0x6: ODD not meet
+	 * 0x7: Camera Dirty
+	 * 0x8: Collosion
+	 * 0x9: Navigation not meet
+	 * 0xA: External ECU Failure
+	 * 0xB:  Bad Weather
+	 * 0xC : Large curve
+	 * 0xD: HDmap Error
+	 */
+	optional uint32 NOPQuitReason = 6; //领航辅助退出原因
+
+	/**
+	 * 0x0:None
+	 * 0x1:navigation LC request
+	 * 0x2:overtaking LC request
+	 * 0x3:evasion LC request
+	 * 0x4:high efficiency  LC request
+	 * 0x5:construction LC request
+	 * 0x6: lane block LC request
+	 * 0x7: LC request conf
+	 */
+	optional uint32 NOPALCReqDriverConf = 7; //推荐变道请求确认
+
+	/**
+	 * 0x0: No
+	 * 0x1: NOP degrade to ICA Reminder
+	 * 0x2: NOP  degrade to ACC Reminder
+	 * 0x3: HNOP To UNOP
+	 * 0x4: UNOP To HNOP 
+	 * 0x5:ICA upgrade to HNOP
+	 * 0x6:ICA upgrade to UNOP
+	 * 0x7:NOP degrade to ICA Reminder with bad network
+	 * 0x8: ACC upgrade to ICA
+	 */
+	optional uint32 NOPDegradeReminder = 8;//领航辅助升降级行为提示
+
+	/**
+	 * 0x0: None 0x1: Reach the route end
+	 * 0x2: Activated Reminder
+	 * 0x3: Pre-cancel Reminder I
+	 * 0x4: Pre-cancel Reminder II
+	 * 0x5: Pre-cancel Reminder III
+	 * 0x6: Pre-cancel Reminder IV
+	 * 0x7: Dropped-out
+	 * 0x8: Fault reminder
+	 * 0x9: ReRoute Success
+	 * 0xA: Pre-cancel Reminder V
+	 * 0xB: Available Reminder
+	 * 0xC: Cross solid line warning
+	 * 0xD: Tunnel driving warning
+	 * 0xE: Roundabout warning
+	 * 0xF: TrafficLight warning
+	 * 0x10: Not centered warning
+	 */
+	optional uint32 NOPStReminder = 9; //领航辅助状态提示
+
+	/**
+	 * 0x0: None 0x1: Driver command
+	 * 0x2: preceeding vehicle slow
+	 * 0x3: construction zone
+	 * 0x4: obstacle
+	 * 0x5: drive out of overtaking Lane
+	 * 0X6: evasion cone
+	 * 0x7: navigation
+	 * 0x8: fault reminder（"变道失败，正在返回原车道"）
+	 * 0x9: Lane block
+	 * 0xA: Enter mainroad
+	 * 0xB: Enter ramp
+	 * 0xC: Avoid rightmost ramp entrance
+	 * 0xD: Traffic jam ahead
+	 * 0xE: High efficiency
+	 */
+	optional uint32 NOPLaneChangeReason	 = 10; //领航辅助变道原因
+
+	/**
+	 * 0x0:None 0x1: Static Obstacle
+	 * 0x2: Ready to pass through large curvature
+	 * 0x3:Oversized Vehicle One Side
+	 * 0x4:Toll Station
+	 * 0x5: Accident Vehilce
+	 * 0x6: Narrow Lane
+	 * 0x7: Caution Cone
+	 * 0x8: Bad weather
+	 * 0x9: Caution Overtaking Vehicle
+	 * 0xA: Caution crossing tunnel
+	 * 0xB: Caution front car too close
+	 * 0xC: Intelligent  following large vehicle
+	 * 0xD: Inhibit Location abnormal
+	 * 0xE: Inhibit 4G/5G abnormal
+	 * 0xF: Inhibit sd abnormal
+	 * 0x10: Inhibit sd route end
+	 * 0x11: Inhibit road conditions not meet
+	 * 0x12:Inhibit weather abnormal
+	 * 0x13: Inhibit tire pressure abnormal
+	 * 0x14: Inhibit VehMode not meet
+	 * 0x15: Inhibit init speed not meet
+	 * 0x16: Inhibit VehSpd over speed limit
+	 * 0x17: Inhibit Camera buzzy
+	 * 0x18: Inhibit_EPS handshake no response
+	 * 0x19: Inhibit_large curve 0x1A: Inhibit_lane remain limit
+	 * 0x1B: Inhibit_current lane narrow
+	 * 0x1C: Out of HDmap
+	 * 0x1D: LC risk warning
+	 * 0x1E: Not centered
+	 * 0x1F: Lidar blocked
+	 */
+	optional uint32 HNOPScenariosReminder = 11; //HNOP场景提示信息
+	optional uint32 Confidencelevel = 12; //"0x0: off 0x1: Low confidence 0x2: High confidence" 场景控制置信度
+	optional uint32 LeaveFastLaneSts = 13; //驶离快车道模式设置状态反馈 0x0: On;0x1: Off
+	optional uint32 NOPLaneChangeWarnTypeFb = 14; //0x0: Off 0x1: Buzzing 0x2: Vibration 0x3: Buzzing and vibration 领航辅助变道报警类型
+	optional uint32 NOPLCPermitSt = 15; //0x0: Permit 0x1: Not permit 领航辅助变道允许状态
+	
+	// 原ADAS_strt_HNOPSupplementInfo
+	optional uint32 HNOACruiseSpdOffsetModFb =16; //车速偏移方式反馈 0x0: None;0x1: Fixed;0x2: Percent;0x3-0xFE: Reserved
+	optional int32 HNOACruiseSpdOffsetSpdFb =17; //固定偏移速度反馈 -20~20kph (res:1kph)
+	optional int32 HNOACruiseSpdOffsetPercentFb =18; //百分比偏移速度反馈 -20%~20%(res:1%)
+	optional uint32 StopLineFlag =19; //引导线中的停止线是否生效标志  0x0: Not Available;0x1: Available
+	optional uint32 NOALCCSwitchBtnONOFFSts =20; //NOA与LCC切换按钮显示状态0x0: No display;0x1: Display switch to LCC;0x2: Display switch to NOA;0x3-0xFE: Reserved
+	optional float NOARemainingMileageFromODD = 21; //距离前方ODD终点里程数 m
+	optional uint32 HNOPConfidence =22; //高速领航辅助置信度 0x0: None;0x1: Level_1;0x2: Level_2;0x3: Level_3;0x4-0xFE: Reserved
+    
+	//ADAS_strt_HNOPSupplementInfo与ADAS_strt_HNOPfunctionInfo相差项
+	optional  ADAS_strt_DrivingTrajectoryPointList  DrivingTrajectoryPointList = 23;//决策引导线
+	optional  ADAS_strt_DrivingTrajectoryPointList  DrivingGuidingSurfacePointList = 24;//引导面
+	optional  ADAS_arr_TrajectoryPoint  TrajectoryPoint = 25;//决策引导线
+}
+
+
+//城市领航辅助
+message ADAS_strt_UNOPfunctionInfo {
+	/**
+	*0x0: off
+    *0x1: passive
+    *0x2: ready
+    *0x3: active control
+    *0x4: Longitudinal Suspend
+    *0x5: TOR
+    *0x6: Safe stop
+    *0x7: failure
+    *0x8:  Lateral Suspend
+	*/
+	uint32 UNOPSts = 1; //城市领航辅助状态
+
+	uint32 SidePassConfirmReq = 2;//绕行请求驾驶员确认 0x0: None 0x1: Bypass start warning 0x2: Opposite bypass confirm 0x3: Bypass fail
+	
+	/**绕行功能状态:		
+	 * 0x0: None
+	 * 0x1: in lane nudge ready
+	 * 0x2: in lane nudge ongoing
+	 * 0x3: in lane nudge end
+	 * 0x4: in lane nudge aborted
+	 * 0x5: overtake ready
+	 * 0x6: bypass warning
+	 * 0x7: overtake end
+	 * 0x8: overtake aborted
+	 * 0x9: opposite overtake ready
+	 * 0xA: opposite overtake ongoing
+	 * 0xB: opposite overtake end
+	 * 0xC: opposite overtake aborted
+	 * 0xD: bypass ongoing
+	 * 0xE: opposite bypass ongoing	
+	 */	 
+	uint32 SidePassSt =3;
+	
+	uint32 IntersectionDriBehavior =4; //	十字路口行为 0x0:None 0x1:left turn 0x2:straight 0x3:right turn 0x4:U turn 0x5: E2E temp deactivated 0x6: Reserved
+	
+	/**HNOP场景提示信息:		
+	 * 0x0: None
+	 * 0x1: tunnel
+	 * 0x2: intersection
+	 * 0x3: Construnction Zone
+	 * 0x4: Toll Station
+	 * 0x5: Narrow Lane
+	 * 0x6: Road Slope
+	 * 0x7: Static Obstacles
+	 * 0x8: VRU
+	 * 0x9: CrossWalk
+	 * 0xA: Motorcycle
+	 * 0xB: Heavy traffic
+	 * 0xC: Roundabout  intersection
+	 * 0xD: School Zone in front
+	 * 0xE: poor weather condition
+	 * 0xF: Fobbiden stop area in front
+	 * 0x10: vehicles with long tail object
+	 * 0x11: Oversized Vehicle One Side
+	 * 0x12: moving vehicle partially occupy ego lane
+	 * 0x13: Reversible lane warning
+	 * 0x14: Variable lane warning
+	 * 0x15: Complex road condition
+	 * 0x16: Backwards confirm
+	 * 0x17: Backwards warning 
+	 * 0x18: Waiting area confirm 
+	 * 0x19: Bus lane warning
+	 * 0x1A: Blind area warning
+	 * 0x1B: will pull over
+	 * 0x1C: HNOA will exit for toll gate
+	 * 0x1D: ongoing pull over
+	 * 0x1E: pull over blocked
+	 * 0x1F: Reach the route end
+	 * 0x20-0xFE: Reserved	
+	 */	
+	uint32 UNOPScenariosReminder =5;
+	
+	ADAS_arr_TrafficLight UrbanTrafficLight =6; //城区交通灯信息
+	uint32 TLRFcnSts = 7; //交通灯状态反馈 0x0: off 0x1: on 0x2: Failure
+}
+
+
+/************************泊车功能提示*********************************/
+
+//路线轨迹点坐标
+message ADAS_strt_MNPMemRoutePosition
+{
+	optional float MemRoutePointX =1; //记忆路线轨迹点坐标X
+	optional float MemRoutePointY =2; //记忆路线轨迹点坐标Y
+	optional float MemRoutePointZ =3; //记忆路线轨迹点坐标Z
+}
+
+message ADAS_arr_MNPMemRoutePosition
+{
+	repeated ADAS_strt_MNPMemRoutePosition mnp_mem_route_positions = 1;
+}
+
+//路线轨迹点信息
+message ADAS_strt_MNPMemRoutePointsInfo
+{
+	optional int32 MNPMemRoutePointsNum = 1; //路线轨迹点数量
+	optional ADAS_arr_MNPMemRoutePosition MNPMemRoutePoints = 2; //路线轨迹点数组
+}
+
+//记忆路线信息
+message ADAS_strt_MNPRouteInfo
+{
+	optional string MapRouteID =1;//路线ID
+	optional string MapRouteName =2; //路线名称
+	optional string MapRouteStartName =3; //路线起点名称
+	optional string MapRouteEndName =4; //路线终点名称
+	optional ADAS_strt_MNPMemRoutePosition MapRouteEndPoint = 5; //路线终点坐标
+	optional float MapRouteMileage =6; //路线里程数
+	optional int32 MapRouteGrade =7; //路线评分
+	optional int32 MapRouteUseFreq =8; //路线使用频率（暂未使用，预留）
+	optional uint64 MapRouteCreatTime =9; //路线创建时间
+	optional ADAS_strt_MNPMemRoutePosition MemRouteStartPoint =10; //路线起点坐标
+	optional ADAS_strt_MNPMemRoutePointsInfo MNPMemRoutePointsInfo =11; //路线轨迹点信息
+}
+
+//记忆路线信息数组
+message ADAS_arr_MNPRoutesInfo{
+	repeated ADAS_strt_MNPRouteInfo MNPRouteInfo = 1;
+}
+
+//全部路线
+message ADAS_strt_MNPAllRoutesInfo
+{
+	optional ADAS_arr_MNPRoutesInfo MNPRoutesInfo =1; //记忆路线信息数组
+	optional int32 MNPMemRoutesNum =2; //记忆路线数量
+}
+
+//记忆路线状态信息数组
+message ADAS_strt_MNPRouteStateInfo
+{
+	optional string MapRouteID = 1; //路线ID
+	optional int32 MemRouteState = 2; //路线状态
+}
+
+message ADAS_arr_MNPRoutesStateInfo {
+	repeated ADAS_strt_MNPRouteStateInfo mnp_route_state_infos = 1;
+}
+
+//MNP功能输出状态
+message ADAS_strt_MNPInfo{
+	optional int32 MNPSts = 1;	//MNP工作状态 //0x0: Off 0x1: Passive 0x2: Stanby 0x3: Active 0x4: SafeStop 0x5: Failure 0x6: Active-suspend 0x7: Degraded 0x8-0xFE: Reserved
+	optional int32 MNPBuildMapSts =2 ;//MNP建图工作状态 0x0: Off 0x1: Passive 0x2: Stanby 0x3: Active 0x4: Saving 0x5: Mapping Completed 0x6: Mapping Fail 0x7: Temporary Failure 0x8: Permanent Failure
+	optional int32 MNPNewRoute =3;//	可以新建路线提示 0x0: Not Available 0x1: Available
+	optional float MNPRouteMileage = 4;	//当前记忆里程数
+	optional int32 MNPRouteSaving =5;	//记忆路线保存进度   0-100%
+	optional int32 MNPMemRoutesNum =6;	//已记忆路线数量
+	optional int32 MNPRouteAvailable =7;	//记忆路线推荐提示 0x0: Not Available 0x1: Available
+	
+	/**记忆行车建图阶段文言提示信息：
+         0x0: No Display
+         0x1: The route is full
+         0x2: Vehicle speed too high
+         0x3: Low positioning accuracy
+         0x4: Navigate to the destination
+         0x5: Keep the speed
+         0x6: Reduce vehicle speed
+         0x7: Vehicle speed too high, Route memory failed
+         0x8: Navigation interruption, Route memory failed
+         0x9: Other reasons, Route memory failed
+         0xA: Route saving
+         0xB: Route saved successfully
+         0xC: Reroute
+         0xD: Approaching the maximum mileage limit
+         0xE: Route memory ends
+         0xF: Navigation route has waypoints, Route memory failed
+         0x10: Block serious, Route memory failed
+         0x11: Bad weather, Route memory failed
+         0x12: Using Other ADAS functions
+         0x13: Door or Unclosed Well
+         0x14: The D file is not mounted
+         0x15: Other Reason
+         0x16: Other ADAS Function interruption
+         0x17: Into The basement garage
+         0x18: Other Reason cause Autosave
+         0x19: Not wearing a seat belt, Route memory failed(主驾末系安全带,路线学习退出)
+         0x1A: Vehicle speed too high, Mapping Fail(车速已超130kmh,无法新建路线)
+         0x1B: Not wearing a seat belt, Mapping Fail(主驾未系安全带,无法新建路线)
+         0x1C: Bad weather, Mapping Fail(雨刮器最高档,无法新建路线)
+         0x1D: Weak positioning signal, Mapping Fail(当前位置定位立信号弱,不满足新建路线条件)
+         0x1E: Already in the process of learning, Mapping Fail (正在路线学习,无法新建路线)
+         0x1F: No navigation for more than 2 minutes, Route memory failed(检测2min内仍无导航,退出学习)
+         0x20: Route memory exit(正在学习路线,是否退出学习)
+         0x21: Routememory failed(本次路线记忆失败)
+         0x22-0xFE: Reserved
+	 */	
+	optional int32 MNPBuildMapTextInfomation =8;
+
+	/**记忆行车使用阶段文言提示信息：	
+         0x0: No Display
+         0x1: Start navigation
+         0x2: Drive to the memory route section
+         0x3: Please activate CNOALite
+         0x4: Departure from memory route
+         0x5: Navigation stopped
+         0x6: Inconsistent route ahead
+         0x7: Complex road conditions
+         0x8: Traffic light block
+         0x9: Navigation destination change, downgraded to LCC
+         0xA: C-NOA Lite pre-degrade to ICA reminder I
+         0xB: C-NOA Lite pre-degrade to ICA reminder II
+         0xC: C-NOA Lite degrade to ICA Reminde
+         0xD: Takeover The Vehicle
+         0xE: Please press the accelerator pedal to start
+         0xF: Front Turnstile, Takeover The Vehicle
+         0x10: Turn around at the intersection
+         0x11: spot vision, improve concentration
+         0x12: Complex road conditions, C-NOA Lite degrade to ICA Reminder(前方路况复杂, 200m后将切换成车道居中辅助)
+         0x13: Abnormal positioning, C-NOA Lite degrade to ICA Reminder(定位异常, 已降级至车道居中辅助)
+         0x14: Deviation from the route, C-NOA Lite degrade to ICA Reminder(偏离记忆路线, 即将切换为车道居中辅助)
+         0x15: Activated Reminder(记忆领航辅助已激活)
+         0x16: System Failure(记忆领航辅助暂不可用)
+         0x17: upgrade to C-NOA Lite (LCC升级至MNP)
+         0x18: C-NOA Lite degrade to ACC Reminder(MNP降级至ACC)
+         0x19-0xFE: Reserved
+	 */	
+	optional int32 MNPUseMapTextInfomation = 9;//记忆行车使用阶段文言提示信息
+	
+	optional string MNPDelRouteID =10;//删除的路线ID
+	optional int32 MNPDelRouteSts =11;//删除路线是否成功0x0：None 0x1：NO 0x2：YES
+	optional int32 MNPNewRouteBtnSt =12;//新建路线按钮高亮提示0x0: Not Available 0x1: Available
+	optional int32 MNPStopMemRouteDrawing =13;//通知导航停止记忆路线的描画 0x0: None 0x1: Stop drawing
+	optional ADAS_strt_MNPRouteInfo MNPNewMapInfo =14;//新建路线信息
+	optional ADAS_arr_MNPRoutesStateInfo MNPAllRoutesStateInfo =15;//全部路线的状态信息
+
+}
+
+/************************安全类报警提示*********************************/
+
+//主动安全功能信息
+message ADAS_strt_ActiveSafetyFcnInfo {
+	uint32 FcwSts =1;//	FCW功能状态 0x0:OFF 0x1:ON 0x2:Failure
+	uint32 AebSts =2;//	AEB功能状态 0x0:OFF 0x1:ON 0x2:Failure 0x3: Inhibited
+	uint32 FcwWarnDist =3;//	FCW报警距离 0x0: Normal 0x1: Near0x2: Far 0x3: No action 0x4-0xFE: Reserved
+	uint32 FcwAcitveSt =4;//	FCW执行状态 0x0:no request 0x1:level 1(low) 0x2:level 2(middle) 0x3:level 3(high) 0x4:reserved 0x5:reserved 0x6:reserved 0x7:reserved
+	uint32 AebAcitveSt =5;//	AEB执行状态 0x0:No_Active 0x1:Pre-fill 0x2:Active
+
+	/**FCW/AEB文言提示信息：	
+	 * 0x0: No Display
+	 * 0x1: FCW is active
+	 * 0x2: FCW is switched on
+	 * 0x3: Unable to switched on FCW
+	 * 0x4: FCW is switched off 
+	 * 0x5: FCW is in error mode
+	 * 0x6: AEB is active
+	 * 0x7: AEB is switched on
+	 * 0x8: Unable to switched on AEB
+	 * 0x9: AEB is switched off
+	 * 0xA: AEB is in error mode 
+	 */		 
+	uint32 FCWAEBTextInfomation =6;
+	
+	uint32 FCTAWarnTypeSts =7; //FCTA报警类型状态0x0: Off 0x1: warning only 0x2: warning and brake 0x3: Failure
+	uint32 FCTAWarningActiveSt =8; //FCTA报警执行状态0x0: No Warning 0x1: Left Warning 0x2: Right Warning 0x3: Left Right Warning
+	uint32 FCTBWarningActiveSt =9; //FCTB报警执行状态0x0: No Warning 0x1: Left Warning 0x2: Right Warning 0x3: Left Right Warning
+}
+
+//脱手脱眼报警信号
+message ADAS_strt_HodDmsInfo {
+	/**
+	 * 0x0: None
+	 * 0x1: Warning 1 for stage1
+	 * 0x2: Warning 2  for stage2
+	 * 0x3: Warning 3 for stage3(TOR)
+	 * 0x4: Warning 4 for stage4(Punishment)
+	 * 0x5: Cannot brake stop
+	 * 0x6: Lc handsoff warning level1
+	 * 0x7: Lc handsoff warning level2
+	 * 0x8: Warning 2.5 for stage2.5
+	 */
+	optional uint32 DriverhandsoffWarning =1;
+
+	optional uint32 DMSWarning =2; //脱眼报警0x0: None 0x1: Warning 1 for stage1 0x2: Warning 2  for stage2 0x3: TOR  for stage3(DMS RMF) 0x4: Incapable of monitoring with distractions(眼部遮挡提醒) 0x5-0xFE: Reserved
+	optional uint32 HandsOnReq =3; //请求驾驶员握住方向盘提示0x0: No request 0x1: request
+	optional uint32 HODWarnSettingStFb =4; //0x0: Standard（默认值）0x1: Long 0x2: reserved
+}
+
+//AES/ESS功能输出信息
+message ADAS_strt_ESSInfo{
+	optional uint32 ESSSts =1; //ESS 功能状态 0x0: OFF 0x1: Standby 0x2: Active 0x3: Failure 0x4: Passive 0x5: ON 0x6: Inhibited
+	optional uint32 ESSDirection =2; //ESS激活方向 0x0: not active  0x1: left  0x2: right
+	optional uint32 AESSts =3; //AES 功能状态 0x0: OFF 0x1: Standby 0x2: Active 0x3: Failure 0x4: Passive 0x5: ON 0x6: Inhibited
+	optional uint32 AESDirection =4; //AES激活方向 0x0: not active  0x1: left  0x2: right
+	optional uint32 ESSActiveSt =5; //ESS激活状态0x0: OFF 0x1: Standby 0x2: Active 0x3: Failure 0x4: Passive
+	optional uint32 AESActiveSt =6; //AES激活状态0x0: OFF 0x1: Standby 0x2: Active 0x3: Failure 0x4: Passive
+	optional uint32 AESESSTextInfo =7; //AESESS文言提示信息
+	/*
+		0x0: No Display
+		0x1: ESS is active 
+		0x2: AESS is active
+		0x3: AESESS is switched on
+		0x4: Unable to switched on AESESS
+		0x5: AESESS is switched off
+		0x6: ESS is in error mode
+		0x7: AES is in error mode
+	*/
+}
+
+//iLOA智慧避让功能状态
+message ADAS_strt_IntelligentEvasionInfo {
+	uint32 iLOASts = 1; //智慧躲闪功能状态  0x0: Off  0x1: Stanby  0x2: Evasioning  0x3: Retreat  0x4: Evasion finished
+	uint32 iLOAActdirection = 2; //智慧躲闪方向 0x0: Not active  0x1: Left  0x2: Right
+	uint32 iLOATextInfo = 3; //智慧躲闪提示信息 
+	/*
+		0x0: None
+		0x1: Evading oversized vehicle
+		0x2: Bypass warning
+		0x3: Evading small vehicle
+		0x4: Evading barriers
+		0x5-0xFE: Reserved
+    */
+}
+
+//LSS 功能输出信息
+message ADAS_strt_LSSInfo{
+	optional uint32 LKSSts = 1; //车道辅助系统状态  0x0: OFF 0x1: Standby 0x2: Active 0x3: Failure 0x4: Passive 0x5: Reserved 0x6: Inhibited 0x7: Reserved
+	optional uint32 LKSMod = 2; //车道辅助模式 0x0: Off 0x1: Warning 0x2: Warning+intervention 0x3: Intervention 0x4: Reserved
+	optional uint32 ELKSts =3; //紧急车道保持状态 0x0: OFF 0x1: Standby 0x2: Active 0x3: Failure 0x4: Passive 0x5: Reserved 0x6: Inhibited 0x7: Reserved
+	optional uint32 LKSLeftTrackingSt = 4; //左侧跟踪状态0x0: Inactive 0x1: Lane Tracking 0x2: Intervention 0x3: warning
+	optional uint32 LKSRightTrackingSt =5; //右侧跟踪状态 0x0: Inactive 0x1: Lane Tracking 0x2: Intervention 0x3: warning
+	optional uint32 ELKLeftActiveSt = 6; //ELK 左侧激活状态 0x0: no warning 0x1: tracking 0x2: intervention
+	optional uint32 ELKRightActiveSt =7; //ELK 右侧激活状态 0x0: no warning 0x1: tracking 0x2: intervention
+	optional uint32 LKSwarning =8; //LDP声音报警信号 0x0: no warning 0x1: warning 0x2: warning and vibration
+	optional uint32 LKSWarnSensitivity =9; //LKS预警灵敏度 0x0: No action 0x1: Low 0x2: High
+	optional uint32 LSSTextInfomation=10; // 0x0: No Display 0x1: LKS is in error mode 0x2: ELK is in error mode 0x3: LDW is in error mode 0x4: LDP is in error mode 0x5-0xFE: Reserved
+	optional uint32 LDPSts=11; //车道偏离抑制系统状态 0x0: OFF 0x1: Passive 0x2: Standby 0x3: Active 0x4: Failure 0x5: Inhibited 0x6-0xFE: Reserved
+	optional uint32 LDWSts=12; //车道偏离预警系统状态 0x0: OFF 0x1: Passive 0x2: Standby 0x3: Active 0x4: Failure 0x5: Inhibited 0x6-0xFE: Reserved
+}
+
+//起步提醒功能输出信息
+message ADAS_strt_DAIInfo {
+	optional uint32 DAISts = 1; //起步提醒功能状态 0x0: On 0x1: Off 0x2: Failure
+	optional uint32 DAIReminder = 2; //起步提醒 0x0: None 0x1: Drive Off
+}
+
+
+
+// //决策引导线点信息
+// message ADAS_strt_TrajectoryPoint
+// {
+// 	optional float Coordinate_X = 1; //X坐标
+// 	optional float Coordinate_Y = 2; //Y坐标
+// }
+// //决策引导线数组
+// message ADAS_arr_TrajectoryPoint
+// {
+// 	repeated ADAS_strt_TrajectoryPoint trajectory_points = 1;
+// }
+
+
+
+// 窄路辅助功能输出信息
+message ADAS_struct_NRAInfo {
+	optional uint32 NarrowRoadAssistSts =1; //窄路辅助功能状态 0x0:Off 0x1:Passive 0x2:Standby 0x3:Active 0x4:Failure
+	optional ADAS_arr_TrajectoryPoint NRATrajectoryPoint =2; //窄路辅助轨迹线
+	optional uint32 NarrowRoadAssistTextInfo =3; //窄路辅助提示信息 0x0:None 0x1:Route can pass through 0x2:Passing through narrow road 0x3:Failed passing through to confirm 0x4:Quit Passing through narrow road 0x5:  Cannot pass through narrow road
+	optional uint32 NRAQuitReason =4; //退出原因 0x0: None 0x1: Lane merge 0x2: Lane split
+	optional uint32 NRAPreScanSts =5; //预瞄状态 0x0: None 0x1: Pre_scan can pass through 0x2: Pre_scan can not pass through
+}
+
+//IHC功能输出信息
+message ADAS_strt_IHCInfo {
+	optional uint32 IHC_Status =1; //IHC功能状态 0x0: Off；0x1: Standby；0x2: Active；0x3: Fault；0x4: Reserved；0x5: Reserved；0x6: Reserved；0x7: Reserved
+	optional uint32 IHCTextInfomation =2; //IHC文言提示信息 0x0: No Display 0x1: IHC is in error mode
+}
+
+//ADAS 控制器及传感器状态信息
+message ADAS_strt_SensorSt {
+	uint32 ADASSysSts = 1;//ADAS系统状态
+	uint32 FLCameraSysSts = 2;//左前摄像头故障状态
+	uint32 FLCameraCalSts = 3;//左前摄像头状标定态
+	uint32 FRCameraSysSts = 4;//右前摄像头故障状态
+	uint32 FRCameraCalSts = 5;//右前摄像头状标定态
+	uint32 RLCameraSysSts = 6;//左后摄像头故障状态
+	uint32 RLCameraCalSts = 7;//左后摄像头状标定态
+	uint32 RRCameraSysSts = 8;//右后摄像头故障状态
+	uint32 RRCameraCalSts = 9;//右后摄像头状标定态
+	uint32 RearCameraSysSts = 10;//后摄像头故障状态
+	uint32 RearCameraCalSts = 11;//后摄像头状标定态
+	uint32 FrontFarCameraSysSts = 12;//前远距摄像头故障状态
+	uint32 FrontFarCameraCalSts = 13;//前远距摄像头状标定态
+	uint32 FrontNearCameraSysSts = 14;//前广角摄像头故障状态
+	uint32 FrontNearCameraCalSts = 15;//前广角摄像头状标定态
+	uint32 MainLidarSysSts = 16;//主激光雷达故障状态
+	uint32 MainLidarCalSts = 17;//主激光雷达标定状态
+	uint32 FLLidarSysSts = 18;//前左激光雷达故障状态
+	uint32 FLLidarCalSts = 19;//前左激光雷达标定状态
+	uint32 FRLidarSysSts = 20;//前右激光雷达故障状态
+	uint32 FRLidarCalSts = 21;//前右激光雷达标定状态
+	uint32 SVSFrontCameraSysSts = 22;//前环视相机故障状态
+	uint32 SVSLeftCameraSysSts = 23;//左环视相机故障状态
+	uint32 SVSRightCameraSysSts = 24;//右环视相机故障状态
+	uint32 SVSRearCameraSysSts = 25;//后环视相机故障状态
+	uint32 SVSFrontCameraCalSts= 26;//前环视相机标定状态
+	uint32 SVSLeftCameraCalSts = 27;//左环视相机标定状态
+	uint32 SVSRightCameraCalSts = 28;//右环视相机标定状态
+	uint32 SVSRearCameraCalSts = 29;//后环视相机标定状态
+}
+
+/************************安全类图标*********************************/
+
+//ISLI功能输出信息
+message ADAS_strt_ISLIInfo {
+	optional int32 ISLISt =1; //超速报警功能状态 0x0: OFF 0x1: ON  0x2: failure
+
+	/**限速标志：
+	 * 0x0: No display
+	 * 0x1: Cancellation sign
+	 * 0x2: 5
+	 * 0x3: 10
+	 * 0x4: 15
+	 * 0x5: 20
+	 * 0x6: 25
+	 * 0x7: 30
+	 * 0x8: 35
+	 * 0x9: 40
+	 * 0xA: 45
+	 * 0xB: 50
+	 * 0xC: 55
+	 * 0xD: 60
+	 * 0xE: 65
+	 * 0xF: 70
+	 * 0x10: 75
+	 * 0x11: 80
+	 * 0x12: 85
+	 * 0x13: 90
+	 * 0x14: 95
+	 * 0x15: 100
+	 * 0x16: 105
+	 * 0x17: 110
+	 * 0x18: 115
+	 * 0x19: 120
+	 * 0x1A: 125
+	 * 0x1B: 130
+	 * 0x1C: 135
+	 * 0x1D: 140
+	 * 0x1E: 145
+	 * 0x1F: 150
+	 * 0x20: 155
+	 * 0x21: 160
+	 * 0x22: 165
+	 * 0x23: 170
+	 * 0x24: 175
+	 * 0x25: 180
+	 * 0x26: 185
+	 * 0x27: 190
+	 * 0x28: 195
+	 * 0x29: 200
+	 */
+	optional int32 ISLISpeedLimitSign =2;
+
+	optional int32 ISLISpeedLimitUnit = 3; //限速标志单位 0x0: Unknown 0x1: km/h 0x2: Miles/h 0x3: Reserved
+	optional int32 ISLIOverSpeedWarn = 4; //超速报警状态 0x0: No warning 0x1: Waning1 0x2: Waning2 0x3: Waning3
+	optional int32 ISLIWarningModFb = 5; //超速报警模式反馈 0x0:  OFF  0x1:  Display warning; 0x2:  Sound+display warning
+	optional int32 ISLISpdLimType =6; //超速限制类型 0x0:No Conditional 0x1:Conditional Unconfirmed 0x2~0x3: Reserved
+	optional int32 ISLICruiseSpdAbsOffsetFb =7; //限速绝对偏差值反馈 40~140
+	optional int32 ISLICruiseSpdRelOffsetFb =8; //限速相对偏差值反馈 -20~20
+	optional int32 ISLISpdOffsetMod =9; //限速提醒偏移方式 0x0: No action 0x1: Fixed 0x2: Percent
+	optional int32 ISLICruiseSpdOffsetAbs =10; //固定限速偏移量
+	optional int32 ISLITextInfomation =11; //ISLI文言提示信息 0x0: No Display 0x1: ISLI is in error mode
+
+}
+
+//红绿灯信息
+message ADAS_strt_Light
+{
+	optional uint32 LightType = 1; //红绿灯类型 0x0: Unknown 0x1: Circle 0x2: Left arrow 0x3: Straight arrow 0x4: Right arrow 0x5: Left straight arrow 0x6: Right straight arrow 0x7: Left around arrow 0x8: Around arrow 0x9: Timer
+	optional uint32 LightColor = 2; //红绿灯颜色 0x0: None 0x1: Green 0x2: Green Flashing 0x3: Yellow 0x4: Yellow Flashing 0x5: Red 0x6: Red Flashing 0x7: Unknown
+	optional uint32 RemainingTime = 3; //红绿灯剩余时间
+}
+
+//TLR功能输出信息
+message ADAS_strt_TLRInfo {
+	optional uint32 tlrONOFFSts=1; //交通灯识别系统开关状态0x0: No action 0x1: ON 0x2: OFF
+	optional uint32 tlrSts=2; //交通灯识别功能状态 0x0: OFF 0x1: ON 0x2: Failure
+	optional ADAS_strt_Light leftTrafficLight=3; //左转红绿灯信息
+	optional ADAS_strt_Light straightTrafficLight=4; //直行红绿灯信息
+	optional ADAS_strt_Light rightTrafficLight=5; //右转红绿灯信息
+}
+
+//TLA功能输出信息
+message ADAS_strt_TLAInfo{
+	optional uint32 TLAONOFFSts=1; //红绿灯提醒系统开关状态 0x0: No action 0x1: ON 0x2: OFF
+	optional uint32 TLASts=2; //红绿灯提醒功能状态 0x0: OFF 0x1: ON 0x2: Failure
+	optional uint32 TLATextInfo=3; //TLA提示信息 	0x0: No dispaly 0x1: Traffic light warning 0x2: Green light drive off 0x3-0xFE: Reserved
+}
+
+//自车道交通标志信息
+message ADAS_strt_TrafficSign {
+	optional uint32 TSRSt =1; //TSR功能状态 0x0: OFF 0x1: ON 0x2: failure
+	optional uint64 TrafficSignId=2; //交通标志ID
+
+	/**
+	* 0x0: None
+	* 0x1: No overtaking
+	* 0x2: End of no overtaking
+	* 0x3: Prohibiting turning left 
+	* 0x4: Prohibiting turning Right 
+	* 0x5: Prohibiting U-turning 
+	* 0x6: No Entry
+	* 0x7:  No passing
+	* 0x8:  Prohibiting motor vehicle entering 
+	* 0x9:  Prohibiting Standing and parking
+	* 0xA:Prohibiting long parking
+	* 0xB: Stop sign 
+	* 0xC: Yield sign
+	* 0xD: Motorway start
+	* 0xE: Motorway end
+	* 0xF: Warn Road Work
+	* 0x10: Watch For Pedestrians
+	* 0x11: Warn Kids
+	* 0x12: Warn Merger
+	* 0x13: No Parking
+	*/
+	optional uint32 TrafficSignType = 3; //交通标志类型
+	optional float TrafficSignPosX = 4;	//单位：cm 交通标志位置X
+	optional float TrafficSignPosY = 5;	//单位：cm 交通标志位置Y
+	optional float TrafficSignPosZ = 6;	//单位：cm 交通标志位置Z
+}
+
+/************************泊车提示报警信息*********************************/
+//泊车APK提示及报警信息
+message ADAS_strt_ParkingGenaralInfo{
+  optional uint32 ParkingActiveSubFuncSt	= 1; // 泊车子功能激活状态 "0x0: No Request;0x1: APA on;0x2: RPA on;0x3: HPA  on;0x4: VPA on;0x5: MRA on" 
+
+  /**
+   *0x0: No Request
+   *0x1: Req_Quit_Timing overflow（泊车/暂停超时，泊车系统退出）
+   *0x2: Req_Quit_Move times overflow（泊车次数超限，泊车系统退出）
+   *0x3: Req_Quit_Recover_Interrupt_Times_Overflow（暂停次数超限，泊车系统退出）
+   *0x4: Req_Quit_Trajectory（泊车轨迹规划失败，泊车系统退出）
+   *0x5: Req_Quit_Space limit（泊车空间不足，泊车系统退出）
+   *0x6: Req_Quit_Speed high（泊车速度太大，泊车系统退出）
+   *0x7: Req_Quit_Gas pedal（油门踏板踩下，泊车系统退出）
+   *0x8: Req_Quit_ACC（ACC开启，泊车系统退出）
+   *0x9: Req_Quit_TJA（TJA开启，泊车系统退出）
+   *0xA: Req_Quit_Seat belt unbuckle（安全带解开，泊车系统退出）
+   *0xB: Req_Quit_Driver_Door(all Doors)（车门打开，泊车系统退出）
+   *0xC: Req_Quit_Luggage Door Open（后备箱打开，泊车系统退出）
+   *0xD: Req_Quit_Surround_View（环视关闭，泊车系统退出）
+   *0xE: Req_Quit_Terminate_Button_Pressed（取消摁键摁下，泊车系统退出）
+   *0xF: Req_Quit_Gear Intervention(driver intervention)（驾驶员干预挡位，泊车系统退出）
+   *0x10: Req_Quit_Gear Interrupt (wrong gear position)（挡位不对，泊车系统退出）
+   *0x11: Req_Quit_EPB_Apply（EPB拉起，泊车系统退出）
+   *0x12: Req_Quit_Vehicle Block（车辆Block, 泊车系统退出）
+   *0x13: Req_Quit_External ECU actvie（ESP动态干预，泊车系统退出）
+   *0x14: Req_Quit_Steering Wheel Intervention (reserved)（驾驶员干预方向盘，泊车系统退出）
+   *0x15: Req_Quit_Path_Deviation
+   *0x16: Req_Quit_Other_Reason
+   *0x17: Req_Quit_Phone_Disconnected（与手机断开连接，泊车系统退出）
+   *0x18: Req_Quit_Phone_LowBattey（手机电池电量低，泊车系统退出）
+   *0x19: Req_Quit_No_POC_Slot_Avaliable（无可用泊出车位，泊车系统退出）
+   *0x1A: Req_Quit_Unsafe_Behavior（P/EPB没被置起P-lock）
+   *0x1B: Req_Quit_Door_Lock（车辆上锁，泊车系统退出）（用于RPA）
+   *0x1C: Req_Quit_Remote_device（遥控设备原因导致系统退出）
+   *0x1D: Req_Quit_Engine_Front_Door_Open（前引擎盖打开，泊车系统退出）
+   *0x1E: Req_Quit_Function_Safety（因为功能安全原因导致泊车系统退出）
+   *0x1F: Req_Quit_ Internal_components_abnormal
+   *0x20: Req_Quit_ Backward_move _ long
+   *0x21: Req_Quit_ Corresponding_remind_timeout
+   *0x22: Req_Quit_ Training_process_overflow
+   *0x23: Req_Quit_ Path_upload_timeout
+   *0x24: Req_Quit_ Still_moving_in_recovery_stages 
+   *0x25: Req_Quit_ Limited_ Sensors
+   *0x26: Req_Quit_  Limitation _ PER_Fusion_Map
+   *0x27: Req_Quit_Charge plug connected
+   *0x28: Req_Quit_ Folded_Mirror
+   *0x29: Req_Quit_ Path_Long_Over
+   *0x2A: Req_Quit_Slope _Over limit
+   *0x2B: Req_Quit_Pitch_Over limit
+   *0x2C: Req_Quit_Not allow_Area
+   *0x2D: Req_Quit_LOC_Unavilable
+   *0x2E: Req_Quit_FreeSpace_Limit
+   *0x2F: Req_Quit_Passager_Door
+   *0x30: Req_Quit_No_Avalible_Slot
+   *0x31: Req_Quit_Response_Timeout
+   *0x32: Low HV battery SOC
+   *0x33: Req_Quit_Sensor Error(传感器输入错误)
+   *0x34: Req_Quit_Camera_Dirty(相机脏污)
+   *0x35~0x39: Reserved
+   *0x3A: Req_Quit_USS_Dirty (超声传感器脏污)
+   *0x3B~0x3F: Reserved
+   *0x40: Req_Quit_Standby_Hignt_Speed
+   *0x41: Req_Quit_Standby_ADASActive
+   *0x42: Req_Quit_Standby_APAFailure
+   *0x43: Req_Quit_Standby_RelatedSystemFailure
+   *0x44: Req_Quit_Standby_Collision_Occurs
+   *0x45: Req_Quit_Searching_ADASActive
+   *0x46: Req_Quit_Searching_High_Speed
+   *0x47: Req_Quit_Searching_APAFailure
+   *0x48: Req_Quit_Searching_RelatedSystemFailure
+   *0x49: Req_Quit_OutOff_ODD
+   *0x4A: Req_Quit_AEB_Active
+   *0x4B: Req_Quit_Searching_Collision_occurs
+   *0x4C: Req_Quit_ParkingFunction_Failure
+   *0x4D: Req_Quit_DrivingMode_switch
+   *0x4E-0x73:Reserved
+   *0x74: Req_Quit_Path training
+   *0x75: Req_Quit_Partner System failure_Path training
+   *0x76: Req_Quit_ADAS System failure_Path training
+   *0x77: Req_Quit_speed over limit_Path training
+   *0x78: Req_Quit_Other ADAS Active_Path training
+   *0x79: Req_Quit_ODD over limited_Path training
+   *0x7A:Req_Quit_Saving path failed
+   *0x7B: Req_Quit_Collision_Path training
+   *0x7C~0x8F: Reserved
+   *0x90: Req_Quit_Standby_Partner system failure_HPA 
+   *0x91: Req_Quit_Standby_ADAS system failure_HPA
+   *0x92: HPA eixted
+   *0x93: Req_Quit_ADAS system failure_HPA
+   *0x94: Req_Quit_ADAS system failure_HPA
+   *0x95: Req_Quit_Move times overflow_HPA
+   *0x96: Req_Quit_Interrupt Times Overflow_HPA
+   *0x97: Req_Quit_AEB Active_HPA 
+   *0x98: Req_Quit_Wheel_Blocked_HPA 
+   *0x99: Req_Quit_ODD over limited_HPA
+   *0x9A: Req_Quit_Speed high_HPA 
+   *0x9B: Req_Quit_Driving Mode switch_HPA 
+   *0x9C: Req_Quit_Parking Function Failure_HPA 
+   *0x9D: Req_Quit_Timing overflow_HPA
+   *0x9E: Req_Quit_Collision_HPA
+   *0x9F: Req_Quit_Other ADAS Active_HPA
+   *0xA0-0xFE: Reserved
+  */
+  optional uint32 ParkingQuitInd	        = 2; // 泊车退出提示	 
+
+  /**
+   *0x0: No Request
+   *0x1: Req_Function Select
+   *0x2: Req_Gear_D
+   *0x3: Req_Slow_Down
+   *0x4: Req_SearchingProcess
+   *0x5: Req_Stop
+   *0x6: Req_PS_ID_Selection
+   *0x7: Req_Turn_lever（Reserved)
+   *0x8: Req_Function Select for A/RPA
+   *0x9: Req_Connect_Phone
+   *0xA: Req EPB_Applied(Req_Gear P and EPB Applied)
+   *0xB: Req_Leave_Car
+   *0xC: Req_Close Trunk
+   *0xD: Req_Close Engine Front Door
+   *0xE: Req_Close Door (all doors)
+   *0xF: Req_Buckle Seat Belt
+   *0x10: Req_Surround_View
+   *0x11: Req_Press Brake Pedal
+   *0x12: Req_Confirm_Press DM Switch
+   *0x13: Req_Release Brake
+   *0x14: Req_Process bar
+   *0x15: Req_Function off
+   *0x16: Req_POC Direction Select
+   *0x17: Req_Repress_Parking Switch(请重新摁泊车按键以继续泊车）
+   *0x18: Req_Slope over limit
+   *0x19: Reserved
+   *0x1A: Reserved
+   *0x1B: Reserved
+   *0x1C: Req_MRA_start_confirm
+   *0x1D: Req_Open_outside rear view Mirror
+   *0x1E: Req_Foward move a bit
+   *0x1F: Req_ Confirm_Press Undo Switch
+   *0x20: Req_PS_Input
+   *0x21: Req_Steering Wheel_HandOff
+   *0x22: Req_Undo_Select
+   *0x23: Req_Remove_Charging
+   *0x24: Req_Press Brake and press recovery button
+   *0x25: Req_Confirm_Save training Path
+   *0x26: Req_stop_Paking slot first released(首次搜索到可用车位语音提示）
+   *0x27: Req_System will automatically Save path after trainning success
+   *0x28: Req_Path length  ready exceed limit
+   *0x29: Req_Training path is mapping
+   *0x2A: Req_Target slot occupied, try to paking in other slot
+   *0x2B: Req_Caution rear space
+   *0x2C: Req_Parking resume
+   *0x2D: Req_Speed over limit,APA can't avtive
+   *0x2E:Req_Path saving
+   *0x2F:Req_trajectory planning
+   *0x30:Req_trajectory planning failed
+   *0x31:Req_RPA in narrow slot
+   *0x32: Req_Press_Parking Switch
+   *0x33: Req Free Park Usable
+   *0x34: Req_Drag_Free_Slot
+   *0x35: Req_Obstacle_In_Trajectory
+   *0x36: Req_DrivingMode_switch
+   *0x37: Req_Parking_complete
+   *0x38: Req_PassingExam_SwtSet
+   *0x39: Park out yourself
+   *0x3A~0x3F: Reserved
+   *0x40: Space limit POC
+   *0x41: Caution pedestrians  
+   *0x42: Caution vehicles
+   *0x43: Req_Computing trajectory
+   *0x44: Req_Yield to pedestrians 
+   *0x45: Req_Resuming parking
+   *0x46~0x6F: Reserved
+   *0x70: Req_PTReady
+   *0x71: Req_Caution_ReverseDistance
+   *0x72: Req_Pause_Slot_Select_HPA
+   *0x73: Req_Cancel_Slot_Select_HPA
+   *0x74: Req_Path_deleted_succeed
+   *0x75: Req_Path_deleted_failed
+   *0x76: Req_OnwayLabel_deleted_succeed
+   *0x77: Req_OnwayLabel_deleted_failed
+   *0x78: Req_Path_saving_succeed
+   *0x79: Req_Path_saving_failed
+   *0x7A: Req_modify_repeat_name
+   *0x7B: Req_select_training_slot
+   *0x7C: Approaching the lift label
+   *0x7D: Approaching the exit label
+   *0x7E: Approaching the enter label
+   *0x7F: Approaching the charging label
+   *0x80: Approaching the end
+   *0x81: Ready to parking slot
+   *0x82: Req_Target slot occupied, try to park in other slot
+   *0x83: Req_Number_of_label_OverFlow
+   *0x84: Req_Please add a label type
+   *0x85: Req_select_slot_saving
+   */
+  optional uint32 ParkingDriOperateInd	    = 3; // 驾驶员操作提示	
+
+  /**
+   *0x0: No Request
+   *0x1: Req_Recover_Press_ Resume Switch
+   *0x2: Req_Recover_PassengerDoor_Open
+   *0x3: Req_Recover_Found Obstacle In Trajectory
+   *0x4: Req_Recover_Phone out of range
+   *0x5: Req_Recover_Key out of range
+   *0x6: Req_Recover_Pedestrain In Trajectory 
+   *0x7: Req_Recover_Vehicle standstill overtime
+   *0x8: Req_Recover_External Mirror_Open
+   *0x9: Req_Recover_Trunk_Open
+   *0xA: Req_Recover_Seat belt_Unbuckled
+   *0xB: Req_Recover_Camera blocked
+   *0xC: Req_Brake_And_ Resume
+   *0xD: Req_Recover_Hood_Open
+   *0xE: Req_ Close_Front_Hood
+   *0xF-0xFE: Reserved
+   */
+  optional uint32 ParkingPauseInd	        = 4; // 泊车暂停提示	  
+
+  optional uint32 ParkingFailureReasonInd	= 5; // 泊车故障原因	  "0x0: None;0x1: External ECU failure;0x2: PAS failure"
+
+  /**
+   *0x0: No Request
+   *0x1: Req Stop
+   *0x2: Req Press Brake pedal && press Start Button
+   *0x3: Req Parking start guidance
+   *0x4: Req Apa Rear Space limit
+   *0x5: Req Apa Pause
+   *0x6: Req Apa Resume
+   *0x7: Req Apa Quit && TOR
+   *0x8: Req Apa Completed
+   *0x9: Req Apa Quit 
+   *0xA~0xF:Reserved
+   *0x10: Req Strat Path Trainning
+   *0x11: Req Slow speed
+   *0x12: Req Training length remain limit 100m
+   *0x13: Req Path Tracking Successed 
+   *0x14: Req Release brake && Start cruising 
+   *0x15: Req Cruising will turn left
+   *0x16: Req Cruising will turn right
+   *0x17: Req will reach target slot
+   *0x18: Req will park in target slot
+   *0x19: Req please caution Pedestrain
+   *0x1A: Req please caution Vehicle
+   *0x1B: Req Hpa Pause
+   *0x1C: Req Hpa Resume
+   *0x1D: Req Hpa Quit && TOR
+   *0x1E: Req Target Slot Occupied && Try other slot
+   *0x1F: Req make a way
+   *0x20: Req will reach target point
+   *0x21: Req will Stop and wait vehicle
+   *0x22: Req will by pass vehicle
+   *0x23: Req Stop and wait pedestrian
+   *0x24: Req by pass pedestrian
+   *0x25: Req start going uphill
+   *0x26: Req end uphill
+   *0x27: Req start going downhill
+   *0x28: Req end downhill
+   *0x29: Req Path training Quit
+   *0x2A: Req Hpa Quit 
+   *0X2B: Req Path Available
+   *0x2C~0x2F: Reserved
+   *0x30: Req RA start guidance
+   *0x31: Req RA Pause
+   *0x32: Req RA Resume
+   *0x33: Req RA Quit
+   *0x34: Req RA Completed
+   *0x35: Req RA Quit && TOR
+   */
+  optional uint32 ParkingVoiceRemind	    = 6; // 泊车语音提示	     
+
+  /**
+   *0x0: No Request
+   *0x1: APASearching_in
+   *0x2: APASearching_out
+   *0x3: APAParking
+   *0x4: APACompleted
+   *0x5: Free PIC
+   *0x6: Route management
+   *0x7: Mapbuilting
+   *0x8: Mapbuilt_complete
+   *0x9: HPA-Cruise
+   *0xA: HPA_completed
+   *0xB: Edit path
+   *0xC: MRASearching
+   *0xD: MRAParking
+   *0xE: MRACompleted
+   *0xF: ReturnHomeScreen
+   *0x10: Mapbuilting_APA_In
+   *0x11: HPA-Cruise_APA_In
+   *0x12: RPA Remote car relocation
+   *0x13-0xFE: Reserved
+  */
+  optional uint32 ADAS_ParkingScreen_ctrl	= 7; // APA大屏界面显示信号
+ 
+  optional uint32 APAFucButtonSts	        = 8; // APA功能按钮显示状态	 "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"
+  optional uint32 HPAFucButtonSts	        = 9; // HPA功能按钮显示状态	 "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"       
+  optional uint32 MRAFucButtonSts	        = 10; // MRA功能按钮显示状态	 "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"       
+  optional uint32 FreeParkFucButtonSts	    = 11; // 自定义泊车功能按钮显示状态  "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"
+  optional uint32 ParkingLotButtonSts	    = 12; // 收藏停车场图标显示状态	  "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"  
+  optional uint32 RoadClassReq	            = 13; // 获取道路等级请求	 "0x0: not availale;0x1: available"
+  optional uint32 RPASet	                = 14; // 遥控泊车设置项	   "0x0: None;0x1: ON;0x2: Off;0x3: reserved"
+  optional uint32 ParkingSpeedSet	        = 15; // 泊车车速控制设置项	   "0x0: None;0x1: SpeedSlow;0x2: SpeedNormal;0x3: SpeedFast"
+  optional uint32 HPACrusingSpeedSet	    = 16; // 泊车巡航车速控制设置项	   "0x0: None;0x1: SpeedSlow;0x2: SpeedNormal;0x3: SpeedFast"
+  
+  /**
+   *0x0: None
+   *0x1: ParkingchimeVoice1
+   *0x2: ParkingchimeVoice2
+   *0x3: ParkingchimeVoice3
+   *0x4: ParkingchimeVoice4
+   *0x5: ParkingchimeVoice5
+   *0x6: ParkingchimeVoice6
+   *0x7: ParkingchimeVoice7
+   *0x8: ParkingchimeVoice8
+  */
+  optional uint32 ParkingChimeVoice	        = 17; // 泊车提示音
+
+  optional uint32 AMAPSts	                = 18; // 加速踏板防误踩状态机信息    "0x0: OFF;0x1: Passive;0x2: Standby;0x3: Active;0x4 : Failure"
+}
+
+//chime音报警
+message ADAS_strt_DrivingSoundInfo{
+
+	/**chime音报警：
+	 * 0x0: No warning
+	 * 0x1: Tip warning
+	 * 0x2: Active warning
+	 * 0x3: Failed warning
+	 * 0x4: Safety warning
+	 * 0x5: Warning sound
+	 * 0x6: Abort warning
+	 * 0x7: Takeover warning
+	 * 0x8: Cancel warning（预留）
+	 * 0x9: ACC Active warning
+	 * 0xA: LCC Active warning
+	 * 0xB: NOA Active warning
+	 */
+	optional uint32 DrivingSoundWarn =1;
+
+}
+
+
+//*******************************智驾卡片***********************************//
+
+//智驾卡片信息(总览)
+message ADAS_strt_TolNtfADDrivingCardinfo{
+
+	optional uint32 TolDatauploadBtnFb      = 1;//一键数据回传信息反馈
+		/*一键数据回传信息反馈
+			0x0: None
+			0x1: Start Record
+			0x2: Frequent Operation
+			0x3-0xFE: Reserved
+		*/
+	optional uint32 TolRecordUploadBtnFb    = 2;//录音上传状态反馈
+		/*录音上传状态反馈
+			0x0: None
+			0x1: upload succeed
+			0x2: upload Failed
+			0x3-0xFE: Reserved
+		*/
+	optional float TolNOAMileage            = 3;// NOA行驶里程
+	optional float TolLCCMileage            = 4;//LCC行驶里程
+	optional uint64 TolAutoRoadCrossingsNum = 5;//自动过路口数量
+	optional uint64 TolAutoMergeChangeLane  = 6;//自动并道换道
+	optional uint64 TolAccessRemitramp      = 7;//汇入汇出匝道
+	optional uint64 TolAutoAvoidObstacle    = 8;//自动避障（避障变道和避障bypass）
+	optional uint64 TolRespondCongestion    = 9;//应对加塞
+	optional uint64 TolU_turnsNum           = 10;//掉头次数
+	optional uint64 TolAPANum               = 11;//APA次数
+	optional uint64 TolAPAParkingTime       = 12;//APA泊入时长
+	optional uint64 TolAPAParkedOutTime     = 13;//APA泊出时长
+
+}
+
+//智驾卡片信息(单次）
+message ADAS_strt_SglNtfADDrivingCardinfo{
+
+	optional float SglNOAMileage			= 1;// NOA行驶里程
+	optional float SglLCCMileage			= 2;//LCC行驶里程
+	optional uint32 SglAutoRoadCrossingsNum = 3;//自动过路口数量
+	optional uint32 SglAutoMergeChangeLane  = 4;//自动并道换道
+	optional uint32 SglAccessRemitramp      = 5;//汇入汇出匝道
+	optional uint32 SglAutoAvoidObstacle    = 6;//自动避障（避障变道和避障bypass）
+	optional uint32 SglRespondCongestion    = 7;//应对加塞
+	optional uint32 SglU_turnsNum           = 8;//掉头次数
+	optional uint32 SglSendMode             = 9;//发送模式 0x0: Single trigger(单次触发)；0x1: Single cycle(单个周期)；0x2-0xFE:Reserved
+	optional uint32 SglTakeoverCount        = 10;//接管次数
+	optional uint64 SqlDrivingTime          = 11;//行驶时间
+	optional uint64 SglNOATime              = 12;//Noa行驶时间
+	optional uint64 SglLCCTime              = 13;//LCC行驶时间
+	optional float  SqlDrivingMileage       = 14;// 行驶里程
+}
+
+
+//文言类数据message整合
+message Prompt_Info {
+	optional ADAS_strt_ACCInfo acc_info = 1; //ACC功能输出信息
+	optional ADAS_strt_ICAInfo ica_info = 2; //ICA功能输出状态
+	optional ADAS_strt_ALCInfo alc_info = 3; //ALC功能输出信息
+	optional ADAS_strt_HNOPfunctionInfo hnop_func_info = 4; //高速领航辅助功能输出信息
+	optional ADAS_strt_UNOPfunctionInfo unop_func_info = 5; //城市领航辅助 
+	optional ADAS_strt_ActiveSafetyFcnInfo active_safety_fcn_info = 6; //主动安全功能信息
+	optional ADAS_strt_HodDmsInfo hod_dms_info = 7; //脱手脱眼报警信号 
+	optional ADAS_strt_ESSInfo ess_info = 8; //AES/ESS功能输出信息
+	optional ADAS_strt_IntelligentEvasionInfo intelligent_evasion_info = 9; //iLOA智慧避让功能状态
+	optional ADAS_strt_LSSInfo lss_info = 10; //LSS 功能输出信息 
+    optional ADAS_strt_DAIInfo dai_info = 11; //起步提醒功能输出信息
+	optional ADAS_struct_NRAInfo nra_info = 12; //窄路辅助功能输出信息
+	optional ADAS_strt_IHCInfo ihc_info = 13; //IHC功能输出信息
+	optional ADAS_strt_SensorSt sensor_st = 14; //ADAS 控制器及传感器状态信息
+	optional ADAS_strt_ISLIInfo isli_i = 15; //ISLI功能输出信息
+	optional ADAS_strt_TLRInfo tlr_info = 16; //TLR功能输出信息
+	optional ADAS_strt_TLAInfo tla_info = 17; //TLA功能输出信息
+	optional ADAS_strt_TrafficSign traffic_sign = 18; //自车道交通标志信息
+	optional ADAS_strt_ParkingGenaralInfo parking_genaral_info = 19; //泊车APK提示及报警信息
+	optional ADAS_strt_TolNtfADDrivingCardinfo  Tol_Ntf_AD_Driving_Card_info = 20;//智驾卡片信息(总览)
+	optional ADAS_strt_SglNtfADDrivingCardinfo  Sgl_Ntf_AD_Driving_Card_info = 21;//智驾卡片信息(单次）
+	optional ADAS_strt_DrivingSoundInfo   Driving_Sound_Info = 22;//chime音报警
+	optional ADAS_strt_MNPAllRoutesInfo   MNP_All_Routes_Info = 23;//全部路线(记忆领航)
+	optional ADAS_strt_MNPRouteInfo       MNP_Route_Info = 24;//记忆路线信息
+	optional ADAS_strt_MNPInfo            MNP_Info = 25;//MNP功能输出状态
+}
+
+
+
+
+
+
+
+
+
+//***********************ads提示信息服务定义**********************//
+service Chery_ADCC_DrivingFuncInfo_Service {
+
+  // -----------------------------------------------------------//
+  //ACC功能输出信息
+  rpc NtfACCInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ACCInfo
+
+  // -----------------------------------------------------------//
+  //ICA功能输出状态
+  rpc NtfICAInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ICAInfo
+
+  // -----------------------------------------------------------//
+  //拨杆变道输出信息
+  rpc NtfALCInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ALCInfo
+
+  // -----------------------------------------------------------//
+  //高速领航辅助功能输出信息
+  rpc NtfHNOPfunctionInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_HNOPfunctionInfo
+
+  // -----------------------------------------------------------//
+  //城市领航辅助
+  rpc NtfUNOPfunctionInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_UNOPfunctionInfo
+
+  // -----------------------------------------------------------//
+  //主动安全功能信息
+  rpc NtfActiveSafetyFcnInfo ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ActiveSafetyFcnInfo
+
+  // -----------------------------------------------------------//
+  //脱手脱眼报警信号
+  rpc NtfHodDmsInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_HodDmsInfo
+
+  // -----------------------------------------------------------//
+  //ESS功能输出信息
+  rpc NtfESSInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ESSInfo
+
+  // -----------------------------------------------------------//
+  //iLOA智慧避让功能状态
+  rpc NtfIntelligentEvasionInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_IntelligentEvasionInfo
+
+  // -----------------------------------------------------------//
+  //LSS功能输出信息
+  rpc NtfLSSInfo_Drvg ( chery_request  ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_LSSInfo
+
+  // -----------------------------------------------------------//
+  //起步提醒功能输出信息
+  rpc NtfDAIInfo_Drvg ( chery_request  ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_DAIInfo
+
+  // -----------------------------------------------------------//
+  //窄路辅助功能输出信息
+  rpc NtfNRAInfo_Drvg ( chery_request  ) 
+  returns ( stream Prompt_Info ); //ADAS_struct_NRAInfo
+
+  // -----------------------------------------------------------//
+  //IHC功能输出信息
+  rpc NtfIHCInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_IHCInfo
+
+  // -----------------------------------------------------------//
+  //控制器及传感器状态信息
+  rpc NtfSensorSt_FCM ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_SensorSt
+
+  // -----------------------------------------------------------//
+  //ISLI功能输出信息
+  rpc NtfISLIInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ISLIInfo
+
+  // -----------------------------------------------------------//
+  //TLR功能输出信息
+  rpc NtfTLRInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_TLRInfo
+
+  // -----------------------------------------------------------//
+  //TLA功能输出信息
+  rpc NtfTLAInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_TLAInfo
+
+  // -----------------------------------------------------------//
+  //自车道交通标志信息
+  rpc NtfTrafficSign_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_TrafficSign
+
+  // -----------------------------------------------------------//
+  //泊车APK提示及报警信息
+  rpc NtfParkingGenaralInfo ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_ParkingGenaralInfo
+  
+  // -----------------------------------------------------------//
+  //智驾卡片信息(总览)
+  rpc TolNtfADDrivingCardinfo ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_TolNtfADDrivingCardinfo
+  
+  // -----------------------------------------------------------//
+  //智驾卡片信息(单次)
+  rpc SglNtfADDrivingCardinfo ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_SglNtfADDrivingCardinfo
+
+  // -----------------------------------------------------------//
+  //chime音报警
+  rpc NtfDrivingSoundInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_DrivingSoundInfo
+
+  // -----------------------------------------------------------//
+  //全部路线
+  rpc NtfMNPAllRoutesInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_MNPAllRoutesInfo
+
+  // -----------------------------------------------------------//
+  //记忆路线信息
+  rpc NtfMNPMemRouteInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_MNPRouteInfo
+
+  // -----------------------------------------------------------//
+  //MNP功能输出状态
+  rpc NtfMNPInfo_Drvg ( chery_request ) 
+  returns ( stream Prompt_Info ); //ADAS_strt_MNPInfo
+
+
+}

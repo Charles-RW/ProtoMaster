@@ -1,0 +1,122 @@
+/**
+ * Copyright (c) 2023- ThunderSoft
+ * All Rights Reserved by Thunder Software Technology Co., Ltd and its
+ * affiliates. You may not use, copy, distribute, modify, transmit in any form
+ * this file except in compliance with ThunderSoft in writing by applicable law.
+ */
+
+syntax = "proto3";
+
+package someip.pilot.status_.alarm.info.service;
+
+// struct ChangeLaneDataNotifyStruct
+message ChangeLaneDataNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    uint32 ChangeLaneState = 3;
+    uint32 ChangeLaneDirection = 4;
+    bool is_change_safety = 5;
+    uint32 ChangeLane_timestamp = 6;
+    double change_ratio = 7;
+    uint32 change_termi = 8;
+    double landing_center_X = 9;
+    double landing_center_Y = 10;
+    double landing_center_Z = 11;
+    double landing_box_length = 12;
+    double landing_box__width = 13;
+    double landing_box_height = 14;
+}
+
+// event ChangeLaneDataNotify
+message ChangeLaneDataNotify {
+    ChangeLaneDataNotifyStruct ChangeLaneDataNotifyStruct = 1;
+}
+
+// struct PilotStatusNotifyStruct
+message PilotStatusNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    uint32 ACCStatus = 3;
+    uint32 ICCStatus = 4;
+    uint32 DNPStatus = 5;
+    bool TakeoverStatus = 6;
+    uint32 driving_time = 7;
+}
+
+// event PilotStatusNotify
+message PilotStatusNotify {
+    PilotStatusNotifyStruct PilotStatusNotifyStruct = 1;
+}
+
+// struct PilotAlarmNoticeInfoNotifyStruct
+message PilotAlarmNoticeInfoNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    uint32 PilotAlarmReason = 3;
+    uint32 alarm_distance = 4;
+    uint32 alarm_stage = 5;
+    double alarm_timestamp = 6;
+    uint32 PilotNotice = 7;
+    uint32 notice_distance = 8;
+    double notice_timestamp = 9;
+}
+
+// event PilotAlarmAndNoticeInfoNotify
+message PilotAlarmAndNoticeInfoNotify {
+    PilotAlarmNoticeInfoNotifyStruct PilotAlarmNoticeInfoNotifyStruct = 1;
+}
+
+// struct BroadcastInfoNotifyStruct
+message BroadcastInfoNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    bool driver_attention = 3;
+    bool large_vehicles = 4;
+    bool dangerous_vehicle = 5;
+    bool pedestrians = 6;
+}
+
+// event BroadcastInfoNotify
+message BroadcastInfoNotify {
+    BroadcastInfoNotifyStruct BroadcastInfoNotifyStruct = 1;
+}
+
+// struct SwitchNotifyStruct
+message SwitchNotifyStruct {
+    uint32 DNP_ICCSwithc_S = 1;
+}
+
+// method SwitchNotify
+message SwitchNotifyReq {
+    SwitchNotifyStruct SwitchNotifyStruct = 1;
+}
+
+// struct ODDRegionCode
+message ODDRegionCode {
+    uint32 ODDRegionCodeValue = 1;
+}
+
+// method ODDRegionCodeNotify
+message ODDRegionCodeNotifyReq {
+    repeated ODDRegionCode ODDRegionCodeInfo = 1;
+}
+
+// struct NewBroadcastInfoNotifyStruct
+message NewBroadcastInfoNotifyStruct {
+    uint32 Checksum = 1;
+    uint32 Counter = 2;
+    uint32 alarm = 3;
+    uint32 notice = 4;
+    double Info_Reserved1 = 5;
+    double Info_Reserved2 = 6;
+    double Info_Reserved3 = 7;
+    double Info_Reserved4 = 8;
+    double Info_Reserved5 = 9;
+}
+
+// event NewBroadcastInfoNotify
+message NewBroadcastInfoNotify {
+    NewBroadcastInfoNotifyStruct NewBroadcastInfoNotifyStruct = 1;
+}
+
+

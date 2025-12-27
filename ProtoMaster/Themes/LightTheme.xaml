@@ -1,0 +1,129 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="PanelBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="TertiaryBackgroundBrush" Color="#E8E8E8"/>
+
+    <SolidColorBrush x:Key="BorderBrush" Color="#CCCCCC"/>
+    <SolidColorBrush x:Key="SeparatorBrush" Color="#E0E0E0"/>
+
+    <SolidColorBrush x:Key="PrimaryTextBrush" Color="#1E1E1E"/>
+    <SolidColorBrush x:Key="SecondaryTextBrush" Color="#6E6E6E"/>
+    <SolidColorBrush x:Key="DisabledTextBrush" Color="#A0A0A0"/>
+
+    <SolidColorBrush x:Key="AccentBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="AccentHoverBrush" Color="#106EBE"/>
+    <SolidColorBrush x:Key="SelectionBrush" Color="#CCE4F7"/>
+
+    <SolidColorBrush x:Key="MenuBackgroundBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="MenuItemHoverBrush" Color="#E5E5E5"/>
+    <SolidColorBrush x:Key="ToolBarBackgroundBrush" Color="#EEEEF2"/>
+    <SolidColorBrush x:Key="StatusBarBackgroundBrush" Color="#0078D4"/>
+    <SolidColorBrush x:Key="StatusBarTextBrush" Color="#FFFFFF"/>
+
+    <SolidColorBrush x:Key="TreeViewBackgroundBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TreeViewItemHoverBrush" Color="#E8E8E8"/>
+    <SolidColorBrush x:Key="TreeViewItemSelectedBrush" Color="#CCE4F7"/>
+
+    <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="#F0F0F0"/>
+    <SolidColorBrush x:Key="TitleBarTextBrush" Color="#1E1E1E"/>
+
+    <Style x:Key="ThemedMenu" TargetType="Menu">
+        <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="ThemedMenuItem" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Style.Triggers>
+            <Trigger Property="IsHighlighted" Value="True">
+                <Setter Property="Background" Value="{DynamicResource MenuItemHoverBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ThemedToolBar" TargetType="ToolBar">
+        <Setter Property="Background" Value="{DynamicResource ToolBarBackgroundBrush}"/>
+    </Style>
+
+    <Style x:Key="ThemedButton" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource TertiaryBackgroundBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="ThemedTextBlock" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="SecondaryTextBlock" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}"/>
+    </Style>
+
+    <Style x:Key="ThemedPanel" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource PanelBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <Style x:Key="ThemedTitleBar" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource TitleBarBackgroundBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+    </Style>
+
+    <Style x:Key="ThemedTreeView" TargetType="TreeView">
+        <Setter Property="Background" Value="{DynamicResource TreeViewBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+
+    <Style x:Key="ThemedTreeViewItem" TargetType="TreeViewItem">
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{DynamicResource TreeViewItemSelectedBrush}"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource TreeViewItemHoverBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ThemedStatusBar" TargetType="StatusBar">
+        <Setter Property="Background" Value="{DynamicResource StatusBarBackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource StatusBarTextBrush}"/>
+    </Style>
+
+    <Style x:Key="ThemedGridSplitter" TargetType="GridSplitter">
+        <Setter Property="Background" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+
+</ResourceDictionary>

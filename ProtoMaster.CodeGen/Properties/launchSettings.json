@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ProtoMaster.CodeGen": {
+      "commandName": "Project",
+      "commandLineArgs": "\"$(SolutionDir)ProtoMaster.Plugin.E01\\Config\\mapping.json\" \"$(SolutionDir)ProtoMaster.Plugin.E01\\Generated\""
+    }
+  }
+}

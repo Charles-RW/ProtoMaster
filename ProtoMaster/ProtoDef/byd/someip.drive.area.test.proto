@@ -1,0 +1,27 @@
+/**
+ * Copyright (c) 2022- ThunderSoft
+ * All Rights Reserved by Thunder Software Technology Co., Ltd and its
+ * affiliates. You may not use, copy, distribute, modify, transmit in any form
+ * this file except in compliance with ThunderSoft in writing by applicable law.
+ */
+
+syntax = "proto3";
+
+package someip.drive.area.DriveAreaInfo;
+
+// struct DriveAreaPoints
+message DriveAreaPoints {
+    uint32 DriveAreaPointsConfidence = 1;
+}
+
+// struct DriveAreaInfoStruct
+message DriveAreaInfoStruct {
+    repeated DriveAreaPoints DriveAreaPointsArray = 5;
+}
+
+// event DriveAreaInfoNotify
+message DriveAreaInfoNotify {
+    DriveAreaInfoStruct DriveAreaInfoStruct = 1;
+}
+
+

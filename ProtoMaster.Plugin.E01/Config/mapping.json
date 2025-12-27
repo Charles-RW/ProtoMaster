@@ -1,0 +1,574 @@
+﻿{
+  "$schema": "./mapping-schema.json",
+  "pluginName": "E01",
+  "namespace": "ProtoMaster.Plugin.E01.Generated",
+  "version": "1.0",
+
+  "dataIdRouting": {
+    "26": "Chery.Ads.Sense.Relity.SR_Info",
+    "27": "Chery.Ads.Sense.Relity.SR_Info",
+    "21": "Chery.Ads.Sense.Relity.SR_Info"
+  },
+
+  "typeMappings": [
+    {
+      "id": "EgoVehiclePose",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_EgoFusionPose",
+      "commonType": "ProtoMaster.Common.Models.CommonEgoVehiclePose",
+      "description": "自车位姿信息",
+      "fieldMappings": [
+        { "proto": "Longitude",     "common": "longitude" },
+        { "proto": "Latitude",      "common": "latitude" },
+        { "proto": "Altitude",      "common": "altitude" },
+        { "proto": "Heading",       "common": "heading" },
+        { "proto": "VehicleSpeed",  "common": "vehicleSpeed" },
+        { "proto": "TimestampmSec", "common": "timestampmSec" }
+      ]
+    },
+    
+    {
+      "id": "DynamicObject",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_DynamicObject",
+      "commonType": "ProtoMaster.Common.Models.CommonObstacle",
+      "description": "动态目标",
+      "category": "dynamic",
+      "fieldMappings": [
+        { "proto": "ObjectId",        "common": "Id", "toCommon": "ToInt32({0})", "toProto": "ToUInt64({0})" },
+        { "proto": "ObjectType",      "common": "Type", "converter": "DynamicObjectTypeConverter" },
+        { "proto": "ObjectPoseX",     "common": "Position.X", "toCommon": "{0} / 100f", "toProto": "{0} * 100f" },
+        { "proto": "ObjectPoseY",     "common": "Position.Y", "toCommon": "{0} / 100f", "toProto": "{0} * 100f" },
+        { "proto": "ObjectVelocityX", "common": "Velocity.X" },
+        { "proto": "ObjectVelocityY", "common": "Velocity.Y" },
+        { "proto": "ObjectYaw",       "common": "heading", "toCommon": "(double){0}", "toProto": "(float){0}" },
+        { "proto": "LightStatus",     "common": "CarLightStatus", "converter": "CarLightStatusConverter" },
+        { "proto": "ObjectColor",     "common": "Color", "converter": "ObstacleColorConverter" },
+        { "proto": "TimestampnSec",   "common": "Timestamp" },
+        { "proto": "LaneID",          "common": "LaneId" }
+      ],
+      "defaultValues": {
+        "common": {
+          "Width": "0",
+          "Height": "0",
+          "Length": "0"
+        }
+      }
+    },
+    
+    {
+      "id": "StaticObject",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_StaticObject",
+      "commonType": "ProtoMaster.Common.Models.CommonObstacle",
+      "description": "静态目标",
+      "category": "static",
+      "fieldMappings": [
+        { "proto": "ObjectId",      "common": "Id", "toCommon": "ToInt32({0})", "toProto": "ToUInt64({0})" },
+        { "proto": "ObjectType",    "common": "Type", "converter": "StaticObjectTypeConverter" },
+        { "proto": "ObjectPoseX",   "common": "Position.X", "toCommon": "{0} / 100f", "toProto": "{0} * 100f" },
+        { "proto": "ObjectPoseY",   "common": "Position.Y", "toCommon": "{0} / 100f", "toProto": "{0} * 100f" },
+        { "proto": "ObjectYaw",     "common": "heading", "toCommon": "(double){0}", "toProto": "(float){0}" },
+        { "proto": "ObjectLength",  "common": "Length", "toCommon": "{0} / 100.0", "toProto": "(uint)({0} * 100)" },
+        { "proto": "ObjecWidth",    "common": "Width", "toCommon": "{0} / 100.0", "toProto": "(uint)({0} * 100)" },
+        { "proto": "TimestampnSec", "common": "Timestamp" },
+        { "proto": "LaneID",        "common": "LaneId" }
+      ],
+      "defaultValues": {
+        "common": {
+          "Height": "0",
+          "CarLightStatus": "Na",
+          "Velocity": "Vector3.Zero"
+        }
+      }
+    },
+    
+    {
+      "id": "LaneLine",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_LaneLine",
+      "commonType": "ProtoMaster.Common.Models.CommonLaneLine",
+      "description": "车道线信息",
+      "fieldMappings": [
+        { "proto": "LineIndex",       "common": "lineIndex" },
+        { "proto": "LineId",          "common": "lineId" },
+        { "proto": "LineColor",       "common": "lineColor", "converter": "ColorConverter" },
+        { "proto": "LineType",        "common": "lineType", "converter": "LaneLineTypeConverter" },
+        {
+          "proto": "LineEquationC0",
+          "common": "lineEquation_C0"
+        },
+        {
+          "proto": "LineEquationC1",
+          "common": "lineEquation_C1"
+        },
+        {
+          "proto": "LineEquationC2",
+          "common": "lineEquation_C2"
+        },
+        {
+          "proto": "LineEquationC3",
+          "common": "lineEquation_C3"
+        },
+        {
+          "proto": "LaneLineWidth",
+          "common": "laneLineWidth"
+        },
+        {
+          "proto": "LineStartX",
+          "common": "lineStart_X"
+        },
+        {
+          "proto": "LineStartY",
+          "common": "lineStart_Y"
+        },
+        {
+          "proto": "LineEndX",
+          "common": "lineEnd_X"
+        },
+        {
+          "proto": "LineEndY",
+          "common": "lineEnd_Y"
+        },
+        {
+          "proto": "LinePointList.LinePoints",
+          "common": "linePoints",
+          "converter": "LinePointsConverter"
+        }
+      ]
+    },
+    
+    {
+      "id": "RoadMarker",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_RoadMarker",
+      "commonType": "ProtoMaster.Common.Models.CommonRoadMarker",
+      "description": "路面标记",
+      "fieldMappings": [
+        { "proto": "RoadMarkerType",        "common": "roadMarkerType", "converter": "RoadMarkerTypeConverter" },
+        { "proto": "RoadMarkerID",          "common": "roadMarkerID" },
+        { "proto": "RoadMarkerTrackingSts", "common": "roadMarkerTrackingSts" },
+        { "proto": "RoadMarkerPose1X",      "common": "roadMarkerPose1X" },
+        { "proto": "RoadMarkerPose1Y",      "common": "roadMarkerPose1Y" },
+        { "proto": "RoadMarkerPose2X",      "common": "roadMarkerPose2X" },
+        { "proto": "RoadMarkerPose2Y",      "common": "roadMarkerPose2Y" },
+        { "proto": "RoadMarkerWidth",       "common": "roadMarkerWidth" }
+      ]
+    },
+    
+    {
+      "id": "ParkingSlot",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_ParkingSlot",
+      "commonType": "ProtoMaster.Common.Models.CommonParkingSlot",
+      "description": "车位信息",
+      "fieldMappings": [
+        { "proto": "SlotID",            "common": "slotID" },
+        { "proto": "SlotType",          "common": "slotType", "converter": "ParkingSlotTypeConverter" },
+        { "proto": "SlotStatus",        "common": "slotStatus", "converter": "ParkingSlotStatusConverter" },
+        { "proto": "SlotPointTop1",     "common": "slotPointTop1", "converter": "HPAPathPointToVector3" },
+        { "proto": "SlotPointTop2",     "common": "slotPointTop2", "converter": "HPAPathPointToVector3" },
+        { "proto": "SlotPointBottom1",  "common": "slotPointBottom1", "converter": "HPAPathPointToVector3" },
+        { "proto": "SlotPointBottom2",  "common": "slotPointBottom2", "converter": "HPAPathPointToVector3" },
+        { "proto": "SlotNum",           "common": "slotNum" },
+        { "proto": "SlotFloor",         "common": "slotFloor", "converter": "ParkingSlotFloorConverter" }
+      ]
+    },
+
+    {
+      "id": "DrivingFunctionState",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_DrivingFunctionState",
+      "commonType": "ProtoMaster.Common.Models.CommonStateInfo",
+      "description": "行车功能状态",
+      "fieldMappings": [
+        {
+          "proto": "ACCSts",
+          "common": "accSts",
+          "converter": "AccStateConverter"
+        },
+        {
+          "proto": "CruiseAccelerateSts",
+          "common": "cruiseAccelerateSts",
+          "converter": "CruiseAccelerationStateConverter"
+        },
+        {
+          "proto": "HNOPSts",
+          "common": "hnopSts",
+          "converter": "HnopStateConverter"
+        },
+        {
+          "proto": "NOPLaneChangeInfo",
+          "common": "nopLaneChangeInfo",
+          "converter": "NopLaneChangeInfoConverter"
+        },
+        {
+          "proto": "ICASts",
+          "common": "icaSts",
+          "converter": "IcaStateConverter"
+        },
+        {
+          "proto": "ALCStatus",
+          "common": "alcStatus",
+          "converter": "AlcStatusConverter"
+        },
+        {
+          "proto": "ALCDestPoseX",
+          "common": "alcDestPoseX"
+        },
+        {
+          "proto": "ALCDestPoseY",
+          "common": "alcDestPoseY"
+        },
+        {
+          "proto": "ALCDestPoseHeading",
+          "common": "alcDestPoseHeading"
+        },
+        {
+          "proto": "LKSLeftTrackingSt",
+          "common": "lksLeftTrackingSt",
+          "converter": "LaneTrackingStateConverter"
+        },
+        {
+          "proto": "LKSRightTrackingSt",
+          "common": "lksRightTrackingSt",
+          "converter": "LaneTrackingStateConverter"
+        },
+        {
+          "proto": "ELKLeftActiveSt",
+          "common": "elkLeftActiveSt",
+          "converter": "ElkActiveStateConverter"
+        },
+        {
+          "proto": "ELKRightActiveSt",
+          "common": "elkRightActiveSt",
+          "converter": "ElkActiveStateConverter"
+        }
+      ]
+    },
+    {
+      "id": "ParkingFunctionState",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_strt_ParkingFunctionState",
+      "commonType": "ProtoMaster.Common.Models.CommonStateInfo",
+      "description": "泊车功能状态",
+      "fieldMappings": [
+        {
+          "proto": "ApaRpaSts",
+          "common": "apaRpaSts",
+          "converter": "ApaRpaStateConverter"
+        },
+        {
+          "proto": "ParkingTypeSelectFb",
+          "common": "parkingTypeSelectFb",
+          "converter": "ParkingTypeSelectFbConverter"
+        },
+        {
+          "proto": "ParkingStopDist",
+          "common": "parkingStopDist"
+        },
+        {
+          "proto": "MRASts",
+          "common": "mraSts",
+          "converter": "MraStsConverter"
+        },
+        {
+          "proto": "MRATrajectory.TrajectoryPoints",
+          "common": "trajectoryPoints",
+          "converter": "TrajectoryPointsConverter"
+        },
+        {
+          "proto": "HPASts",
+          "common": "hpaSts",
+          "converter": "HpaStatusConverter"
+        },
+        {
+          "proto": "HPAPathSelectIDInd",
+          "common": "hpaPathSelectIDInd"
+        }
+      ]
+    }
+  ],
+  
+  "collectionMappings": [
+    {
+      "id": "DynamicObjects",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_arr_DynamicObjects",
+      "protoItemsPath": "DynamicObjects",
+      "itemMapping": "DynamicObject",
+      "toProtoFilter": "DynamicObjectTypeConverter.IsDynamicType(item.Type)"
+    },
+    {
+      "id": "StaticObjects",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_arr_StaticObjects",
+      "protoItemsPath": "StaticObjects",
+      "itemMapping": "StaticObject",
+      "toProtoFilter": "StaticObjectTypeConverter.IsStaticType(item.Type)"
+    },
+    {
+      "id": "LaneLines",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_arr_LaneLineData",
+      "protoItemsPath": "LaneLines",
+      "itemMapping": "LaneLine"
+    },
+    {
+      "id": "RoadMarkers",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_arr_RoadMarker",
+      "protoItemsPath": "RoadMarkers",
+      "itemMapping": "RoadMarker"
+    },
+    {
+      "id": "ParkingSlots",
+      "protoType": "Chery.Ads.Sense.Relity.ADAS_arr_ParkingSlot",
+      "protoItemsPath": "ParkingSlot",
+      "itemMapping": "ParkingSlot"
+    }
+  ],
+
+  "converters": {
+    "DynamicObjectTypeConverter": {
+      "type": "enumMap",
+      "protoType": "uint",
+      "commonType": "CommonObjectType",
+      "mappings": {
+        "0": "Unknown",
+        "1": "Pedestrian",
+        "2": "Cyclist",
+        "3": "Car",
+        "4": "Truck",
+        "5": "Bus",
+        "6": "Motorcycle",
+        "7": "Bicycle",
+        "8": "SUV",
+        "9": "LargeTruck",
+        "10": "Tricycle",
+        "11": "SpecialOperationVehicle",
+        "12": "OtherVehicle",
+        "13": "Motorcyclist",
+        "14": "ElectricBicycle",
+        "15": "NoRiderElectricBicycle",
+        "16": "NoRiderMotorcycle",
+        "17": "NoRiderTricycle",
+        "18": "IrregularCar",
+        "19": "LargeAnimals",
+        "20": "SmallAnimals",
+        "21": "DynamicLargeAnimals",
+        "22": "DynamicSmallAnimals",
+        "23": "DynamicPedestrian",
+        "24": "NoRiderBicycle",
+        "25": "SmallTruck",
+        "26": "Van",
+        "27": "EngineeringVehicle"
+      },
+      "defaultToCommon": "Unknown",
+      "defaultToProto": "0"
+    },
+
+    "StaticObjectTypeConverter": {
+      "type": "enumMap",
+      "protoType": "uint",
+      "commonType": "CommonObjectType",
+      "mappings": {
+        "0": "Unknown",
+        "1": "ConeBucket",
+        "2": "WaterHorse",
+        "3": "TriangularWarningSign",
+        "4": "ParkingBarrierClosed",
+        "5": "SpeedBump",
+        "6": "ParkingLock",
+        "7": "SquareColumn",
+        "8": "CircularColumn",
+        "9": "Pole",
+        "10": "ParkingBarrierOpen",
+        "11": "TrafficPost",
+        "12": "IsolationPost",
+        "13": "CrashCushionBarrel",
+        "14": "ConstructionDiversionSign",
+        "15": "ParkingSign",
+        "16": "ChargingPile",
+        "17": "StonePier",
+        "18": "Limiter",
+        "19": "OtherStaticObject"
+      },
+      "defaultToCommon": "Unknown",
+      "defaultToProto": "0"
+    },
+
+    "CarLightStatusConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "CommonCarLightStatus"
+    },
+
+    "ObstacleColorConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "CommonColor",
+      "mappings": {
+        "0": "None",
+        "1": "Gray",
+        "2": "Green",
+        "3": "Yellow",
+        "4": "Red",
+        "5": "DarkGray"
+      }
+    },
+
+    "ColorConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "CommonColor"
+    },
+
+    "LaneLineTypeConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "LaneLineType"
+    },
+
+    "RoadMarkerTypeConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "RoadMarkerType"
+    },
+
+    "ParkingSlotTypeConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "ParkingSlotType"
+    },
+
+    "ParkingSlotStatusConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "ParkingSlotStatus"
+    },
+
+    "ParkingSlotFloorConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "ParkingSlotFloor"
+    },
+
+    "AccStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "AccState"
+    },
+
+    "HnopStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "HnopState"
+    },
+
+    "LinePointsConverter": {
+      "type": "custom",
+      "toCommonCode": "source.Select(p => new Vector3(p.X / 100f, p.Y / 100f, p.Z / 100f)).ToList()",
+      "toProtoCode": "source.Select(p => new ADAS_strt_LinePoint { X = p.X * 100f, Y = p.Y * 100f, Z = p.Z * 100f })"
+    },
+
+    "HPAPathPointToVector3": {
+      "type": "custom",
+      "toCommonCode": "new Vector3(source.X / 100f, source.Y / 100f, source.Z / 100f)",
+      "toProtoCode": "new ADAS_strt_HPAVPAPathInfo { X = source.X * 100f, Y = source.Y * 100f, Z = source.Z * 100f }"
+    },
+
+    "CruiseAccelerationStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "CruiseAccelerationState"
+    },
+
+    "NopLaneChangeInfoConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "NopLaneChangeInfo"
+    },
+    "IcaStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "IcaState"
+    },
+    "AlcStatusConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "AlcStatus"
+    },
+    "LaneTrackingStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "LaneTrackingState"
+    },
+    "ElkActiveStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "ElkActiveState"
+    },
+    "ApaRpaStateConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "ApaRpaState"
+    },
+    "ParkingTypeSelectFbConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "ParkingTypeSelect"
+    },
+    "MraStsConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "MraState"
+    },
+    "HpaStatusConverter": {
+      "type": "enumDirect",
+      "protoType": "uint",
+      "commonType": "HpaState"
+    },
+    "TrajectoryPointsConverter": {
+      "type": "custom",
+      "commonReturnType": "ProtoMaster.Common.Models.CommonTrajectoryPoints",
+      "protoReturnType": "Chery.Ads.Sense.Relity.ADAS_arr_TrajectoryPoint",
+      "toCommonCode": "new ProtoMaster.Common.Models.CommonTrajectoryPoints { Points = source.Select(p => new Vector3(p.CoordinateX / 100f, p.CoordinateY / 100f, p.CoordinateZ / 100f)).ToList() }",
+      "toProtoCode": "new Chery.Ads.Sense.Relity.ADAS_arr_TrajectoryPoint { TrajectoryPoints = { source.Points.Select(p => new Chery.Ads.Sense.Relity.ADAS_strt_TrajectoryPoint { CoordinateX = p.X * 100f, CoordinateY = p.Y * 100f, CoordinateZ = p.Z * 100f }) } }"
+    }
+  },
+  
+  "aggregateMappings": [
+    {
+      "protoRoot": "SR_Info",
+      "commonRoot": "CommonData",
+      "extractors": [
+        {
+          "protoPath": "EgoFusionPose",
+          "commonPath": "EgoVehiclePose",
+          "mapping": "EgoVehiclePose"
+        },
+        {
+          "protoPath": "ArrDynamicObjects",
+          "commonPath": "Obstacles.Obstacles",
+          "mapping": "DynamicObjects",
+          "mode": "assign"
+        },
+        {
+          "protoPath": "ArrStaticObjects",
+          "commonPath": "Obstacles.Obstacles",
+          "mapping": "StaticObjects",
+          "mode": "addRange"
+        },
+        {
+          "protoPath": "ArrLaneLineData",
+          "commonPath": "LaneLines.LaneLines",
+          "mapping": "LaneLines"
+        },
+        {
+          "protoPath": "ArrRoadMarker",
+          "commonPath": "RoadMarkers.roadMarkerList",
+          "mapping": "RoadMarkers"
+        },
+        {
+          "protoPath": "Slot",
+          "commonPath": "SlotList.parkingSlotList",
+          "mapping": "ParkingSlots"
+        },
+        {
+          "protoPath": "DrivingFunctionState",
+          "commonPath": "StateInfo",
+          "mapping": "DrivingFunctionState"
+        }
+      ]
+    }
+  ]
+}

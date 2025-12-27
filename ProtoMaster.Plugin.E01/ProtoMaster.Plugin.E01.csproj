@@ -1,0 +1,55 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.33.2" />
+    <PackageReference Include="Grpc.Tools" Version="2.76.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ProtoMaster.Common\ProtoMaster.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\**\*.proto" GrpcServices="None" Access="Public" ProtoRoot="Protos" />
+  </ItemGroup>
+
+  <!-- 配置文件 -->
+  <ItemGroup>
+    <None Include="Config\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <!-- 构建前使用 CodeGen 生成转换代码 -->
+  <Target Name="GenerateConverters" BeforeTargets="BeforeCompile" 
+          Inputs="Config\mapping.json" 
+          Outputs="Generated\EnumConverters.g.cs">
+    <Exec Command="dotnet run --project &quot;$(MSBuildThisFileDirectory)..\ProtoMaster.CodeGen\ProtoMaster.CodeGen.csproj&quot; -- &quot;$(MSBuildThisFileDirectory)Config\mapping.json&quot; &quot;$(MSBuildThisFileDirectory)Generated&quot;" />
+  </Target>
+
+  <!-- 构建后复制 -->
+  <Target Name="CopyPluginToHost" AfterTargets="Build">
+    <PropertyGroup>
+      <PluginDest>..\ProtoMaster\bin\$(Configuration)\$(TargetFramework)\Plugins</PluginDest>
+    </PropertyGroup>
+    <MakeDir Directories="$(PluginDest)" />
+    <ItemGroup>
+      <PluginFiles Include="$(TargetDir)*.dll" />
+      <PluginFiles Include="$(TargetDir)*.pdb" />
+      <PluginFiles Remove="$(TargetDir)ProtoMaster.Common.dll;$(TargetDir)ProtoMaster.Common.pdb" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PluginFiles)" DestinationFolder="$(PluginDest)" />
+  </Target>
+
+</Project>

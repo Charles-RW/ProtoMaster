@@ -1,0 +1,1386 @@
+syntax = "proto3";
+package chery.ads.control;
+
+
+
+// 请求消息
+message chery_request {
+  optional uint32 chery_request_status = 1;  //0x0：请求成功   0x1：请求失败
+}
+
+// 响应消息
+message chery_response {
+  optional uint32 chery_response_status = 1;  //0x0：响应成功   0x1：响应失败
+}
+
+
+//********************泊车相关********************//
+//**********************0xA994**********************//
+// 泊车子功能选择信息枚举数据
+enum ICC_enum_ParkingFuncModReq {
+  ICC_enum_ParkingFuncModReq_NO_REQUEST = 0;  // No Request
+  ICC_enum_ParkingFuncModReq_APA_ON = 1;  // APA on
+  ICC_enum_ParkingFuncModReq_RPA_ON = 2;  // RPA on
+  ICC_enum_ParkingFuncModReq_HPA_ON = 3;  // HPA on
+  ICC_enum_ParkingFuncModReq_VPA_ON = 4;  // VPA on
+  ICC_enum_ParkingFuncModReq_MRA_ON = 5;  // MRA on
+  ICC_enum_ParkingFuncModReq_RPA_REMOTE_CAR_RELOCATION = 8;  // RPA Remote car relocation
+}
+
+// 泊车子功能选择信息
+message icc_enum_parking_func_mod_req {
+  optional ICC_enum_ParkingFuncModReq input_mod = 1; 
+}
+
+//VPA功能区域选择信息
+message ICC_strt_VpaSelectZoneInfo { 
+  optional uint32 SelectZoneID = 1; // 选择区域ID
+  /*
+   *0x0: Slot
+   *0x1: Pickup Zone
+   *0x2: Dropoff Zone
+   *0x3: POI Zone
+  */
+  optional uint32 SelectZoneType = 2; // 选择区域类型 
+
+  optional uint32 SelectZoneFloor = 3; // 选择区域所在楼层 "0x0: L1;0x1: L2;"
+  optional float SelectZonePos_X = 4; // 选择区域X坐标
+  optional float SelectZonePos_Y = 5; // 选择区域Y坐标
+}
+
+//用户特殊车位的标签类型
+enum ADAS_enum_VPASpotLabel {
+  ADAS_enum_VPASpotLabel_NONE = 0;  // None
+  ADAS_enum_VPASpotLabel_SLOT = 1;  // slot
+  ADAS_enum_VPASpotLabel_ENTRANCE = 2;  // Entrance (入口)
+  ADAS_enum_VPASpotLabel_CHARGE = 3;  // charge (充电)
+}
+
+//用户特殊车位的标签类型列表
+message ADAS_arr_VPASpotLabel { 
+  repeated ADAS_enum_VPASpotLabel dynamic_VPASpLotabel = 1;
+}
+
+//VPA用户特殊车位属性信息
+message ADAS_strt_VPASpot {
+  optional uint32 VPASlotID       = 1;  //车位ID 0-65535
+  optional string VPASpotName     = 2;  //用户特殊车位名字
+  /*
+  "0x0: None;
+  0x1: L1 Floor
+  *0x2: G1 Floor
+  *0x3: L2 Floor
+  *0x4: G2 Floor
+  *0x5: L3 Floor
+  *0x6: G3 Floor
+  *0x7: L4 Floor
+  *0x8: G4 Floor
+  *0x9: L5 Floor
+  *0xA: G5 Floor
+  *0xB-0xFE: Reserved
+  */
+  optional uint32 VPASpotFloor = 3;    //用户特殊车位的楼层 
+
+  optional ADAS_arr_VPASpotLabel VPASpotLabel = 4;    //用户特殊车位的标签信息
+}
+
+//VPA用户特殊车位属性列表
+message ADAS_arr_VPASpots { 
+  repeated ADAS_strt_VPASpot dynamic_VPAEntrance = 1;
+}
+
+//VPA功能停车场信息
+message ICC_strt_VpaParkingLotInfo {
+  optional uint32 VPAParkingLotID    = 1;//停车场id
+  optional string VPAParkingLotName    = 2;//停车场名字
+  optional ADAS_arr_VPASpots VPASpotLabel    = 3;//用户特殊车位的标签信息
+  optional uint32 VPASlotID     = 4;//车位ID
+  optional string VPAParkingLotAddress  = 5;//停车场地址
+}
+
+// VPA功能输入信息
+message ICC_strt_VpaFcnOperating { 
+  /**
+  *0x0: No Request
+  *0x1: Start VPA 
+  *0x2: Pause VPA
+  *0x3: Resume VPA
+  *0x4: Finish VPA
+  *0x5: Cancel VPA
+  *0x6:  VPA set slot  (设置代客泊车vpa 的车位)
+  *0x7:  VPA clean destination (清除代客泊车 vpa 的地址)
+  *0x8:  delete self-build map (删除某个自建图)
+  *0x9: update saved spot (更新特殊车位标签)
+  *0x1A: delete saved spot (删除特殊车位标签)
+  *0x1B: update parkinglot name (更新停车场名)
+  *0x1C: query parking lot (搜索所有的停车场信息）
+  *0x1D: update parking log address  (更新停车场地图）
+  *0x1F: save map  (保存自建图）
+  *0x20: VPA set entrance (设置入口）
+  *0x21: update default select Id (设置默认车位id）
+  *0x22: start learning (用户点击“开始学习”按钮）
+  *0x23: cancel learning (用户点击“取消学习”按钮）
+  *0x24: finish learning (用户点击”完成学习“按钮）
+  *0x25:  OK button (用户点击”OK“按钮）
+  *0x26:  VpaRpaToggle (用户点击”到达目的地启用遥控泊车“开关）
+  *0x27: Manual create map (手动建图命令）
+  *0x28-0xFE: Reserved"
+  */
+  optional uint32 VPAOperationId = 1; // VPA功能操作指令 
+  
+  optional ICC_strt_VpaSelectZoneInfo VPASelectZoneInfo = 2; // VPA地图区域选择信息
+  optional uint32 VPASubModReq = 3; // VPA功能模式选择  0x0: No Request;0x1: Pickup Mod;0x2: Dropoff Mod;0x3: Self-build map Mod;
+  optional ICC_strt_VpaParkingLotInfo VPAParkingLotOpInfo = 4; // VPA 停车场操作信息
+  optional uint32 VPASelectSlotId = 5; // VPA选择的目的地车位
+  optional uint32 VPASelectEntranceId = 6; // VPA选择的出入口id
+}
+
+// MRA功能输入信息枚举数据
+enum ICC_enum_MRAOperationId {
+  ICC_enum_MRAOperationId_NO_REQUEST = 0;  // No Request
+  ICC_enum_MRAOperationId_START_MRA = 1;  // Start MRA
+  ICC_enum_MRAOperationId_PAUSE_MRA = 2;  // Pause MRA
+  ICC_enum_MRAOperationId_RESUME_MRA = 3;  // Resume MRA
+  ICC_enum_MRAOperationId_CANCEL_MRA = 4;  // Cancel MRA
+}
+
+// MRA功能输入信息
+message ICC_enum_MRA_OperationId {
+  optional ICC_enum_MRAOperationId input_mod = 1; 
+}
+
+// SVS功能状态信息枚举数据
+enum ADAS_enum_SVSSts {
+  ADAS_enum_SVSSts_NOT_ACTIVE = 0;  // Not Active
+  ADAS_enum_SVSSts_ACTIVE = 1;  // Active
+}
+
+// SVS功能状态信息
+message ADAS_enum_SVS_Sts {
+  optional ADAS_enum_SVSSts input_mod = 1; 
+}
+
+message ICC_strt_SlotPoint { 
+  optional float point_x = 1; // x坐标位置信息
+  optional float point_y = 2; // y坐标位置信息
+}
+
+message ICC_strt_ApaFreeSlotInfo { 
+  optional uint32 free_slot_type = 1; // 自选车位的类型 "0x0: No Request;0x1: Parallel;0x2: Cross;0x3: Diagonal"
+  optional ICC_strt_SlotPoint free_slot_point0_top1 = 2; // 自选车位的角点0位置
+  optional ICC_strt_SlotPoint free_slot_point1_top2 = 3; // 自选车位的角点1位置
+  optional ICC_strt_SlotPoint free_slot_point2_bottom1 = 4; // 自选车位的角点2位置
+  optional ICC_strt_SlotPoint free_slot_point3_bottom2 = 5; // 自选车位的角点3位置
+}
+
+// APARPA功能输入信息
+message ICC_strt_ApaRpaFcnOperating { 
+  /*
+  *0x0: No Request
+  *0x1: Start APA
+  *0x2: Pause APA
+  *0x3: Resume APA
+  *0x4: Quit APA
+  *0x5: APA Head-in
+  *0x6: APA Back-in
+  *0x7: Active RPA
+  *0x8: RPA without supervison
+  *0x9: Cancel Popup
+  *0xA-0xB: Reserved
+  *0xC: CollectParkingLot
+  *0xD: CancelParkingLot
+  *0xE: ParkingInLeft
+  *0xF: ParkingInMiddle
+  *0x10: ParkingInRight
+  *0x11: Magnetic Button
+  */
+  optional uint32  ApaOperationId = 1; //    APA功能操作指令 
+
+  optional uint32  ApaModeReq = 2; // APA模式选择指令 "0x0: No Request;0x1: Park in;0x2: Pull out;0x3: Free park"
+  optional uint32  ApaSelectSlotID = 3; // APA选择车位ID
+  /*
+  0x0: None
+  0x1: Front Left Cross
+  0x2: Front Left Parallel
+  0x3: Front Out
+  0x4: Front Right Cross
+  0x5: Front Right Parallel
+  0x6: Back Out
+  0x7: Back Left Cross
+  0x8: Back Right Cross
+  0x9-0xF: Reserved
+  */
+  optional uint32  ApaPocDirection = 4; // APA泊出方向指令 
+
+  optional ICC_strt_ApaFreeSlotInfo ApaFreeSlotInfo = 5; // APA自选车位信息
+  /*
+  *0x0: No Request
+  *0x1: National_Road
+  *0x2: Province_Road
+  *0x3: County_Road
+  *0x4: Rural_Road
+  *0x5: Incounty_Road
+  *0x6: City_Speed_Way
+  *0x7: Main_Road
+  *0x8: Secondary_Road
+  *0x9: Common_Road
+  *0xA: Nonnavi_Road
+  *0xB: Freeway
+  */
+  optional uint32  APARoad_Class = 6; // 道路等级 
+}
+
+message ICC_strt_HPAPathInfo { 
+  float coordinate_x = 1; // X坐标
+  float coordinate_y = 2; // Y坐标
+  float coordinate_z = 3; // Z坐标
+}
+
+
+message ICC_strt_HPASetOnwayLabel { 
+  optional uint32 set_onway_label_id    = 1; // 设置沿途标签的ID
+  optional uint32 set_onway_label_type = 2; // 设置沿途标签的类型 "0x0: No Request;0X1: Set Lift Point Label;0x2: Set In Point Label;0x3: Set Out Point Label;0x4: Set Charger Point Label"
+  optional ICC_strt_HPAPathInfo set_onway_label_poit = 3; // 设置标签的坐标
+}
+
+message ICC_strt_HPAPathOperation { 
+  optional uint32  path_operation_id = 1; // 路线操作指令 "0x0: No Request;0x1: Save Path;0x2: Delete Path;0x3: Share Path;0x4: Cover Path;0x5: Cancel Cover Path;0x6: Edit Path"
+  optional uint32  path_id = 2; // 路线ID 0-10;
+  optional string set_path_name = 3; // 路线名称
+  optional uint32 set_path_label = 4; // 路线标签 "0x0:No label;0x1:Home;0x2:office;0x3:Other"
+  optional uint32 set_hpa_path_type = 5; // 设置路线类型  "0x0: None;0x1: HPA ParkIn;0x2: HPA ParkOut"
+}
+
+// HPA功能输入信息
+message ICC_strt_HpaFcnOperating { 
+  /*
+  *0x0: No Request
+  *0x1: Select Path
+  *0x2: Start HPA Cruising
+  *0x3: Pause HPA
+  *0x4: Resume HPA
+  *0x5: Quit HPA
+  *0x6: Start APA Park in
+  *0x7: Make way confirm
+  *0x8: Nerver notify
+  *0x9: Resume notify
+  *0xA: Cancel Route Popup
+  *0xB: Return Button
+  *0xC: Return to APA Screen
+  *0xD: Active RPA
+  *0xE: RPA without supervison
+  *0xF: Cancel Popup
+  *0x10-0xFE: Reserved
+  */
+  optional uint32 HPAOperationId = 1; //    HPA功能操作指令 
+  /*
+  *0x0: No Request
+  *0x1: Creat Path
+  *0x2: Set End Point
+  *0x3: Start APA Park in 
+  *0x4: Set HPA Regional Slot 
+  *0x5: Set Onway Leabel Request
+  *0x6: Edit Onway Leabel Request
+  *0x7: Delect Onway Leabel Request
+  *0x8: Return Path Edit Screen
+  *0x9: Cancel Onway Leabel Popup
+  *0xA: Cancel HPA Regional Slot 
+  */
+  optional uint32 HPALearnOperationId = 2; // HPA学习操作指令  
+  optional ICC_strt_HPAPathOperation HPAPathOperation = 3; // HPA路线操作指令
+  optional uint32 SelectSlotId = 4; // HPA选择流动车位ID
+  optional uint32 SelectPathId = 5; // HPA选择路线ID
+  /*
+  *0x0: No Request
+  *0x1: Confirm Undo
+  *0x2: Quit Undo
+  *0x3: Start Undo
+  *0x4: Continue training
+  */
+  optional uint32 HPAUndoOperationID = 6; // HPA功能撤回操作指令 
+
+  optional uint32 HPASlotSearchOperationID = 7; // HPA沿途找车位操作指令 "0x0: No request;0x1: Request"
+  optional ICC_strt_HPASetOnwayLabel HPASetOnwayLabel = 8; // 设置沿途标签
+  optional uint32 HPALTEdbm = 9; // 座舱LTE网络强度  0~255
+}
+
+//**************************0xAB03************************//
+
+//泊车子功能汇总信息
+message ADAS_strt_ParkingGenaralInfo{
+  /*
+   *0x0: No Request
+   *0x1: APA on
+   *0x2: RPA on
+   *0x3: HPA  on
+   *0x4: VPA on
+   *0x5: MRA on"
+  */
+  optional uint32 ParkingActiveSubFuncSt  = 1;      //泊车子功能激活状态
+
+  /**
+   *0x0: No Request
+   *0x1: Req_Quit_Timing overflow（泊车/暂停超时，泊车系统退出）
+   *0x2: Req_Quit_Move times overflow（泊车次数超限，泊车系统退出）
+   *0x3: Req_Quit_Recover_Interrupt_Times_Overflow（暂停次数超限，泊车系统退出）
+   *0x4: Req_Quit_Trajectory（泊车轨迹规划失败，泊车系统退出）
+   *0x5: Req_Quit_Space limit（泊车空间不足，泊车系统退出）
+   *0x6: Req_Quit_Speed high（泊车速度太大，泊车系统退出）
+   *0x7: Req_Quit_Gas pedal（油门踏板踩下，泊车系统退出）
+   *0x8: Req_Quit_ACC（ACC开启，泊车系统退出）
+   *0x9: Req_Quit_TJA（TJA开启，泊车系统退出）
+   *0xA: Req_Quit_Seat belt unbuckle（安全带解开，泊车系统退出）
+   *0xB: Req_Quit_Driver_Door(all Doors)（车门打开，泊车系统退出）
+   *0xC: Req_Quit_Luggage Door Open（后备箱打开，泊车系统退出）
+   *0xD: Req_Quit_Surround_View（环视关闭，泊车系统退出）
+   *0xE: Req_Quit_Terminate_Button_Pressed（取消摁键摁下，泊车系统退出）
+   *0xF: Req_Quit_Gear Intervention(driver intervention)（驾驶员干预挡位，泊车系统退出）
+   *0x10: Req_Quit_Gear Interrupt (wrong gear position)（挡位不对，泊车系统退出）
+   *0x11: Req_Quit_EPB_Apply（EPB拉起，泊车系统退出）
+   *0x12: Req_Quit_Vehicle Block（车辆Block, 泊车系统退出）
+   *0x13: Req_Quit_External ECU actvie（ESP动态干预，泊车系统退出）
+   *0x14: Req_Quit_Steering Wheel Intervention (reserved)（驾驶员干预方向盘，泊车系统退出）
+   *0x15: Req_Quit_Path_Deviation
+   *0x16: Req_Quit_Other_Reason
+   *0x17: Req_Quit_Phone_Disconnected（与手机断开连接，泊车系统退出）
+   *0x18: Req_Quit_Phone_LowBattey（手机电池电量低，泊车系统退出）
+   *0x19: Req_Quit_No_POC_Slot_Avaliable（无可用泊出车位，泊车系统退出）
+   *0x1A: Req_Quit_Unsafe_Behavior（P/EPB没被置起P-lock）
+   *0x1B: Req_Quit_Door_Lock（车辆上锁，泊车系统退出）（用于RPA）
+   *0x1C: Req_Quit_Remote_device（遥控设备原因导致系统退出）
+   *0x1D: Req_Quit_Engine_Front_Door_Open（前引擎盖打开，泊车系统退出）
+   *0x1E: Req_Quit_Function_Safety（因为功能安全原因导致泊车系统退出）
+   *0x1F: Req_Quit_ Internal_components_abnormal
+   *0x20: Req_Quit_ Backward_move _ long
+   *0x21: Req_Quit_ Corresponding_remind_timeout
+   *0x22: Req_Quit_ Training_process_overflow
+   *0x23: Req_Quit_ Path_upload_timeout
+   *0x24: Req_Quit_ Still_moving_in_recovery_stages 
+   *0x25: Req_Quit_ Limited_ Sensors
+   *0x26: Req_Quit_  Limitation _ PER_Fusion_Map
+   *0x27: Req_Quit_Charge plug connected
+   *0x28: Req_Quit_ Folded_Mirror
+   *0x29: Req_Quit_ Path_Long_Over
+   *0x2A: Req_Quit_Slope _Over limit
+   *0x2B: Req_Quit_Pitch_Over limit
+   *0x2C: Req_Quit_Not allow_Area
+   *0x2D: Req_Quit_LOC_Unavilable
+   *0x2E: Req_Quit_FreeSpace_Limit
+   *0x2F: Req_Quit_Passager_Door
+   *0x30: Req_Quit_No_Avalible_Slot
+   *0x31: Req_Quit_Response_Timeout
+   *0x32: Low HV battery SOC
+   *0x33: Req_Quit_Sensor Error(传感器输入错误)
+   *0x34: Req_Quit_Camera_Dirty(相机脏污)
+   *0x35~0x39: Reserved
+   *0x3A: Req_Quit_USS_Dirty (超声传感器脏污)
+   *0x3B~0x3F: Reserved
+   *0x40: Req_Quit_Standby_Hignt_Speed
+   *0x41: Req_Quit_Standby_ADASActive
+   *0x42: Req_Quit_Standby_APAFailure
+   *0x43: Req_Quit_Standby_RelatedSystemFailure
+   *0x44: Req_Quit_Standby_Collision_Occurs
+   *0x45: Req_Quit_Searching_ADASActive
+   *0x46: Req_Quit_Searching_High_Speed
+   *0x47: Req_Quit_Searching_APAFailure
+   *0x48: Req_Quit_Searching_RelatedSystemFailure
+   *0x49: Req_Quit_OutOff_ODD
+   *0x4A: Req_Quit_AEB_Active
+   *0x4B: Req_Quit_Searching_Collision_occurs
+   *0x4C: Req_Quit_ParkingFunction_Failure
+   *0x4D: Req_Quit_DrivingMode_switch
+   *0x4E-0x73:Reserved
+   *0x74: Req_Quit_Path training
+   *0x75: Req_Quit_Partner System failure_Path training
+   *0x76: Req_Quit_ADAS System failure_Path training
+   *0x77: Req_Quit_speed over limit_Path training
+   *0x78: Req_Quit_Other ADAS Active_Path training
+   *0x79: Req_Quit_ODD over limited_Path training
+   *0x7A:Req_Quit_Saving path failed
+   *0x7B: Req_Quit_Collision_Path training
+   *0x7C~0x8F: Reserved
+   *0x90: Req_Quit_Standby_Partner system failure_HPA 
+   *0x91: Req_Quit_Standby_ADAS system failure_HPA
+   *0x92: HPA eixted
+   *0x93: Req_Quit_ADAS system failure_HPA
+   *0x94: Req_Quit_ADAS system failure_HPA
+   *0x95: Req_Quit_Move times overflow_HPA
+   *0x96: Req_Quit_Interrupt Times Overflow_HPA
+   *0x97: Req_Quit_AEB Active_HPA 
+   *0x98: Req_Quit_Wheel_Blocked_HPA 
+   *0x99: Req_Quit_ODD over limited_HPA
+   *0x9A: Req_Quit_Speed high_HPA 
+   *0x9B: Req_Quit_Driving Mode switch_HPA 
+   *0x9C: Req_Quit_Parking Function Failure_HPA 
+   *0x9D: Req_Quit_Timing overflow_HPA
+   *0x9E: Req_Quit_Collision_HPA
+   *0x9F: Req_Quit_Other ADAS Active_HPA
+   *0xA0-0xFE: Reserved"
+   */
+  optional uint32 ParkingQuitInd   = 2;      //泊车退出提示      
+
+  /**
+    *0x0: No Request
+    *0x1: Req_Function Select
+    *0x2: Req_Gear_D
+    *0x3: Req_Slow_Down
+    *0x4: Req_SearchingProcess
+    *0x5: Req_Stop
+    *0x6: Req_PS_ID_Selection
+    *0x7: Req_Turn_lever（Reserved)
+    *0x8: Req_Function Select for A/RPA
+    *0x9: Req_Connect_Phone
+    *0xA: Req EPB_Applied(Req_Gear P and EPB Applied)
+    *0xB: Req_Leave_Car
+    *0xC: Req_Close Trunk
+    *0xD: Req_Close Engine Front Door
+    *0xE: Req_Close Door (all doors)
+    *0xF: Req_Buckle Seat Belt
+    *0x10: Req_Surround_View
+    *0x11: Req_Press Brake Pedal
+    *0x12: Req_Confirm_Press DM Switch
+    *0x13: Req_Release Brake
+    *0x14: Req_Process bar
+    *0x15: Req_Function off
+    *0x16: Req_POC Direction Select
+    *0x17: Req_Repress_Parking Switch(请重新摁泊车按键以继续泊车）
+    *0x18: Req_Slope over limit
+    *0x19: Reserved
+    *0x1A: Reserved
+    *0x1B: Reserved
+    *0x1C: Req_MRA_start_confirm
+    *0x1D: Req_Open_outside rear view Mirror
+    *0x1E: Req_Foward move a bit
+    *0x1F: Req_ Confirm_Press Undo Switch
+    *0x20: Req_PS_Input
+    *0x21: Req_Steering Wheel_HandOff
+    *0x22: Req_Undo_Select
+    *0x23: Req_Remove_Charging
+    *0x24: Req_Press Brake and press recovery button
+    *0x25: Req_Confirm_Save training Path
+    *0x26: Req_stop_Paking slot first released(首次搜索到可用车位语音提示）
+    *0x27: Req_System will automatically Save path after trainning success
+    *0x28: Req_Path length  ready exceed limit
+    *0x29: Req_Training path is mapping
+    *0x2A: Req_Target slot occupied, try to paking in other slot
+    *0x2B: Req_Caution rear space
+    *0x2C: Req_Parking resume
+    *0x2D: Req_Speed over limit,APA can't avtive
+    *0x2E:Req_Path saving
+    *0x2F:Req_trajectory planning
+    *0x30:Req_trajectory planning failed
+    *0x31:Req_RPA in narrow slot
+    *0x32: Req_Press_Parking Switch
+    *0x33: Req Free Park Usable
+    *0x34: Req_Drag_Free_Slot
+    *0x35: Req_Obstacle_In_Trajectory
+    *0x36: Req_DrivingMode_switch
+    *0x37: Req_Parking_complete
+    *0x38: Req_PassingExam_SwtSet
+    *0x39: Park out yourself
+    *0x3A~0x3F: Reserved
+    *0x40: Space limit POC
+    *0x41: Caution pedestrians  
+    *0x42: Caution vehicles
+    *0x43: Req_Computing trajectory
+    *0x44: Req_Yield to pedestrians 
+    *0x45: Req_Resuming parking
+    *0x46~0x6F: Reserved
+    *0x70: Req_PTReady
+    *0x71: Req_Caution_ReverseDistance
+    *0x72: Req_Pause_Slot_Select_HPA
+    *0x73: Req_Cancel_Slot_Select_HPA
+    *0x74: Req_Path_deleted_succeed
+    *0x75: Req_Path_deleted_failed
+    *0x76: Req_OnwayLabel_deleted_succeed
+    *0x77: Req_OnwayLabel_deleted_failed
+    *0x78: Req_Path_saving_succeed
+    *0x79: Req_Path_saving_failed
+    *0x7A: Req_modify_repeat_name
+    *0x7B: Req_select_training_slot
+    *0x7C: Approaching the lift label
+    *0x7D: Approaching the exit label
+    *0x7E: Approaching the enter label
+    *0x7F: Approaching the charging label
+    *0x80: Approaching the end
+    *0x81: Ready to parking slot
+    *0x82: Req_Target slot occupied, try to park in other slot
+    *0x83: Req_Number_of_label_OverFlow
+    *0x84: Req_Please add a label type
+    *0x85: Req_select_slot_saving"
+  */
+  optional uint32 ParkingDriOperateInd   = 3;      //驾驶员操作提示
+
+  /**
+   *0x0: No Request
+   *0x1: Req_Recover_Press_ Resume Switch
+   *0x2: Req_Recover_PassengerDoor_Open
+   *0x3: Req_Recover_Found Obstacle In Trajectory
+   *0x4: Req_Recover_Phone out of range
+   *0x5: Req_Recover_Key out of range
+   *0x6: Req_Recover_Pedestrain In Trajectory 
+   *0x7: Req_Recover_Vehicle standstill overtime
+   *0x8: Req_Recover_External Mirror_Open
+   *0x9: Req_Recover_Trunk_Open
+   *0xA: Req_Recover_Seat belt_Unbuckled
+   *0xB: Req_Recover_Camera blocked
+   *0xC: Req_Brake_And_ Resume
+   *0xD: Req_Recover_Hood_Open
+   *0xE: Req_ Close_Front_Hood
+   *0xF-0xFE: Reserved
+*/
+  optional uint32 ParkingPauseInd   = 4;      //泊车暂停提示   
+
+  optional uint32 ParkingFailureReasonInd   = 5;      //泊车故障原因   "0x0: None;0x1: External ECU failure;0x2: PAS failure"
+  /**
+   *0x0: No Request
+   *0x1: Req Stop
+   *0x2: Req Press Brake pedal && press Start Button
+   *0x3: Req Parking start guidance
+   *0x4: Req Apa Rear Space limit
+   *0x5: Req Apa Pause
+   *0x6: Req Apa Resume
+   *0x7: Req Apa Quit && TOR
+   *0x8: Req Apa Completed
+   *0x9: Req Apa Quit 
+   *0xA~0xF:Reserved
+   *0x10: Req Strat Path Trainning
+   *0x11: Req Slow speed
+   *0x12: Req Training length remain limit 100m
+   *0x13: Req Path Tracking Successed 
+   *0x14: Req Release brake && Start cruising 
+   *0x15: Req Cruising will turn left
+   *0x16: Req Cruising will turn right
+   *0x17: Req will reach target slot
+   *0x18: Req will park in target slot
+   *0x19: Req please caution Pedestrain
+   *0x1A: Req please caution Vehicle
+   *0x1B: Req Hpa Pause
+   *0x1C: Req Hpa Resume
+   *0x1D: Req Hpa Quit && TOR
+   *0x1E: Req Target Slot Occupied && Try other slot
+   *0x1F: Req make a way
+   *0x20: Req will reach target point
+   *0x21: Req will Stop and wait vehicle
+   *0x22: Req will by pass vehicle
+   *0x23: Req Stop and wait pedestrian
+   *0x24: Req by pass pedestrian
+   *0x25: Req start going uphill
+   *0x26: Req end uphill
+   *0x27: Req start going downhill
+   *0x28: Req end downhill
+   *0x29: Req Path training Quit
+   *0x2A: Req Hpa Quit 
+   *0X2B: Req Path Available
+   *0x2C~0x2F: Reserved
+   *0x30: Req RA start guidance
+   *0x31: Req RA Pause
+   *0x32: Req RA Resume
+   *0x33: Req RA Quit
+   *0x34: Req RA Completed
+   *0x35: Req RA Quit && TOR"
+  */
+  optional uint32 ParkingVoiceRemind     = 6;      //泊车语音提示     
+
+  /**
+   *0x0: No Request
+   *0x1: APASearching_in
+   *0x2: APASearching_out
+   *0x3: APAParking
+   *0x4: APACompleted
+   *0x5: Free PIC
+   *0x6: Route management
+   *0x7: Mapbuilting
+   *0x8: Mapbuilt_complete
+   *0x9: HPA-Cruise
+   *0xA: HPA_completed
+   *0xB: Edit path
+   *0xC: MRASearching
+   *0xD: MRAParking
+   *0xE: MRACompleted
+   *0xF: ReturnHomeScreen
+   *0x10: Mapbuilting_APA_In
+   *0x11: HPA-Cruise_APA_In
+   *0x12: RPA Remote car relocation
+   *0x13-0xFE: Reserved
+  */
+  optional uint32 ADAS_ParkingScreen_ctrl   = 7;      //APA大屏界面显示信号    
+  
+  optional uint32 APAFucButtonSts   = 8;      //APA功能按钮显示状态  "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"
+  optional uint32 HPAFucButtonSts      = 9;      //HPA功能按钮显示状态  "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"     
+  optional uint32 MRAFucButtonSts      = 10;      //MRA功能按钮显示状态 "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"       
+  optional uint32 FreeParkFucButtonSts    = 11;      //自定义泊车功能按钮显示状态 "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"      
+  optional uint32 ParkingLotButtonSts        = 12;      //收藏停车场图标显示状态  "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"     
+  optional uint32 RoadClassReq     = 13;      //获取道路等级请求  "0x0: not availale;0x1: available"
+  optional uint32 RPASet       = 14;      //遥控泊车设置项 "0x0: None;0x1: ON;0x2: Off;0x3: reserved"
+  optional uint32 ParkingSpeedSet        = 15;      //泊车车速控制设置项 "0x0: None;0x1: SpeedSlow;0x2: SpeedNormal;0x3: SpeedFast"
+  optional uint32 HPACrusingSpeedSet   = 16;      //泊车巡航车速控制设置项 "0x0: None;0x1: SpeedSlow;0x2: SpeedNormal;0x3: SpeedFast"         
+    /**
+   *0x0: None
+   *0x1: ParkingchimeVoice1
+   *0x2: ParkingchimeVoice2
+   *0x3: ParkingchimeVoice3
+   *0x4: ParkingchimeVoice4
+   *0x5: ParkingchimeVoice5
+   *0x6: ParkingchimeVoice6
+   *0x7: ParkingchimeVoice7;0x8: ParkingchimeVoice8"
+   */
+  optional uint32 ParkingChimeVoice     = 17;      //泊车提示音 
+
+  optional uint32 AMAPSts   = 18;      //加速踏板防误踩状态机信息 "0x0: OFF;0x1: Passive;0x2: Standby;0x3: Active;0x4 : Failure"
+}
+
+//规划轨迹
+message ADAS_strt_TrajectoryPoint {
+    optional float Coordinate_X =1;    //X坐标
+    optional float Coordinate_Y =2;    //Y坐标
+  //optional float Coordinate_Z =3; //Z坐标
+}
+
+//决策引导线
+message ADAS_arr_TrajectoryPoint{
+    repeated ADAS_strt_TrajectoryPoint points = 1;
+}
+
+//自车智驾系统坐标系定位信息
+message ADAS_strt_EgoPose{
+    optional float EgoVehPoseX = 1; //自车位置坐标
+    optional float EgoVehPoseY = 2; //自车位置坐标
+    optional float EgoVehPoseZ = 3; //自车位置坐标
+    optional float EgoVehYaw = 4; //自车位姿
+    optional float EgoVehPitch = 5; //自车位姿
+    optional float EgoVehRoll = 6; //自车位姿
+}
+
+//终点车位顶点
+message ADAS_strt_SlotPoint{
+    optional float Point_X =1; //x坐标位置信息
+    optional float Point_Y =2; //y坐标位置信息
+}
+
+//轮挡信息
+message ADAS_strt_WheelStopInfo {
+    optional ADAS_strt_SlotPoint StartPoint = 1; //轮挡端点1
+    optional ADAS_strt_SlotPoint EndPoint = 2; //轮挡端点2
+    optional int32 WheelStopperWidth =3 ; //轮挡宽度(cm)
+}
+//轮挡信息
+message ADAS_strt_SlotWheelStopperInfo {
+    optional uint32 wheel_stopper =1; //轮挡是否存在 0x0: Not Active 0x1: No wheel stopper 0x2: Has wheel stopper
+    optional ADAS_strt_WheelStopInfo  WheelStopInfo =2; //轮挡信息
+}
+
+
+//泊入目标车位信息
+message ADAS_strt_ApaTargetSlotInfo {
+    optional ADAS_strt_SlotPoint TargetSlotPoint0Top1 =1; //车位顶点1
+    optional ADAS_strt_SlotPoint TargetSlotPoint1Top2 =2; //车位顶点2
+    optional ADAS_strt_SlotPoint TargetSlotPoint2Bottom1 =3; //车位顶点3
+    optional ADAS_strt_SlotPoint TargetSlotPoint3Bottom2 =4; //车位顶点4
+    optional uint32 TargetSlotType =5; //车位类型 0x0: No Park 0x1: Parallel 0x2: Cross 0x3: Diagonal
+    optional uint32 TargetSlotAvailableParkInType =6; //车位可用泊入类型 0x0: None 0x1: Head in 0x2: Back in 0x3: Head in and Back in
+    optional ADAS_strt_SlotWheelStopperInfo SlotWheelStopperInfo =7; //轮挡信息
+}
+
+
+message ADAS_strt_APARPAInfo{
+  optional uint32 ApaOperationResp      = 1;  //APARPA按键状态反馈0x0: No Response 0x1: Succeed 0x2: Failed
+  /**APARPA状态机信息    
+   *0x0: Off
+   *0x1: Standby
+   *0x2: Searching
+   *0x3: Guidance active
+   *0x4: Completed
+   *0x5: Failure
+   *0x6: Terminate
+   *0x7: Pause
+   *0x8: Undo
+   *0x9: Quit
+   *0x10-0xFE: Reserved
+  */
+  optional uint32 ApaRpaSts                = 2;  //APARPA状态机信息    
+
+  optional uint32 ParkingTypeSelectFb   = 3;  //泊入泊出方式选择反馈    "0x0: No Selection;0x1: PIC（parking in control）;0x2: POC（parking out control）;0x3: Free PIC"
+  optional uint32 ParkinDirectionSts      = 4;  //泊入方向状态反馈    "0x0: None;0x1: Head in;0x2: Back in"
+  optional uint32 FreeParkSlotAvaSts      = 5;  //自由泊入车位可用性状态    "0x0: not availale;0x1: available"
+  /**
+   *0x0: None
+   *0x1: Front Left Cross
+   *0x2: Front Left Parallel
+   *0x3: Front Out
+   *0x4: Front Right Cross
+   *0x5: Front Right Parallel
+   *0x6: Back Out
+   *0x7: Back Left Cross
+   *0x8: Back Right Cross
+   *0x9~0xF: Reserved
+  */
+  optional uint32 ParkOutDirectionSt      = 6;  //泊出方向状态    
+
+  optional uint32 POCFLParallelSts        = 7;  //左前平行泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCFLCorssSts            = 8;  //左前垂直泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCFRParallelSts        = 9;  //右前平行泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCFRCrossSts            = 10;  //右前垂直泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCFrontCrossSts        = 11;  //前方垂直泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCRearCrossSts          = 12;  //后方垂直泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCRLCrossSts            = 13;  //左后方垂直泊出位置可用性    "0x0: invalid;0x1: valid"
+  optional uint32 POCRRCrossSts            = 14;  //右后方垂直泊出位置可用性    "0x0: invalid;0x1: valid"
+  /**
+   *0x0: No Active
+   *0x1: Automatic cross park in
+   *0x2: Automatic Parallel park in
+   *0x3: Automatic crossl park out
+   *0x4: Automatic parallel park out
+   *0x5: Remote cross park in
+   *0x6: Remote parallel park in
+   *0x7: Remote crossl park out
+   *0x8: Remote parallel  park out
+   *0x9~0xF: Reserved
+  */
+  optional uint32 APAActiveFuncInd        = 15;  //自动泊车激活功能    
+
+  optional uint32 ApaSelectIDInd          = 16;  //泊车选择的车位ID     0-65535
+  optional float  ParkingStopDist          = 17;  //泊车剩余距离    单位:m
+  optional ADAS_arr_TrajectoryPoint APARPATrajectory        = 18;  //泊车规划引导线    
+  optional uint32 RpaAvaliableStatus      = 19;  //Rpa可用状态    "0x0: not availale;0x1: available"
+  optional ADAS_strt_EgoPose ApaEgoVehPos            = 20;  //泊车位姿信息    
+  optional ADAS_strt_ApaTargetSlotInfo ApaTargetSlotInfo     = 21;  //泊入目标车位信息    
+  optional uint32 APAStartButtonSts        = 22;  //开始泊车按钮    "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"
+  optional uint32 APARPAButtonSts          = 23;  //自动泊车切换RPA按钮    "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"
+  /**
+   *0x0: Off
+   *0x1: Standby
+   *0x2: Preparing
+   *0x3: Guidance active
+   *0x4: Completed
+   *0x5: Failure
+   *0x6: Terminate
+   *0x7: Pause
+   *0x8: Reserved
+  */
+  optional uint32 BAFASts       = 24;  //遥控直入直出状态机信息    
+  optional uint32 ParkInDirectionAvaType= 25;    //泊入车位的可泊方向类型    "0x0: None;0x1: Head in;0x2: Back in;0x3: Head in and Back in"
+  optional uint32 APAResumeButtonSts      = 26;  //恢复泊车按钮可用状态    "0x0: None;0x1: Not Available;0x2: Available;0x3: FuntionActive"
+  /**
+   *0x0: None
+   *0x1: RPA Without Supervison Notice
+   *0x2: RPA Model Select Popup
+   *0x3: APA failure（APA失败）
+   *0x4: APA activated（APA已激活）
+   *0x5: Please reduce speed to search for parking space（请减速以寻找停车位）
+   *0x6: The environment does not support APA（环境不支持APA）
+   *0x7: Please close the door（请把门关上）
+   *0x8: Please close the hood（请关上引擎盖）
+   *0x9: Please close the trunk（请把后备箱关上）
+   *0xA: Please press the brake and select a parking space（请踩刹车,选择一个停车位）
+   *0xB: Please take over  - Vehicle rolling（请接管-车辆翻滚）
+   *0xC: APA exited（APA退出）
+   *0xD-0xFE: Reserved"
+  */
+  optional uint32 APAPopup                = 27;  //APA弹窗    
+
+}
+
+//记忆泊车循迹信息统计
+message ADAS_strt_HpaUseData {
+    optional float HpaCruiseDist =1; //本次泊车距离
+    optional uint32 HpaCruiseTime =2; //本次泊车时长
+    optional uint32 HPAVPAGiveWayPedTimes =3; //让路行人次数
+    optional uint32 HPAVPAGiveWayVehTimes =4; //让路车辆次数
+    optional uint32 HPASpeedBumpNum =5; //通过减速带数量
+}
+
+//车位顶点
+message ADAS_strt_HPAVPAPathInfo {
+    optional float x =1; //X坐标
+    optional float y =2; //Y坐标
+    optional float z =3; //Z坐标
+}
+
+//泊车规划引导线
+message ADAS_arr_HPATrajectoryPoint
+{
+    repeated ADAS_strt_HPAVPAPathInfo path_point =1;
+}
+
+//HPA  VPA 功能输出状态
+message ADAS_strt_AdvanceParkingInfo{
+  /**
+   *0x0: Off
+   *0x1: Standby
+   *0x2: Guidance active
+   *0x3: Completed
+   *0x4 : Failure
+   *0x5: Terminate
+   *0x6: Pause
+   *0x7: Training
+   *0x8: Training Completed
+   *0x9: Training terminate
+   *0xA: Mapping
+   *0xB: Track Preparing
+  */
+  optional uint32 HPASts                        = 1;//记忆泊车状态信息
+
+  optional uint32 HPASearchOnWaySelectSlotID    = 2;//记忆泊车沿途找车位泊入车位在记忆路线中的车位ID 0-65535
+    optional ADAS_strt_HpaUseData HPAUseData= 3; //记忆泊车循迹信息统计
+    /**
+     * 0x0: Default 
+     * 0x1: VPA map  download or update 
+     * 0x2: VPA map  downloading 
+     * 0x3: VPA map  updating 
+     * 0x4: Parking system error 
+     * 0x5: Other ADAS or dynamic function active
+     * 0x6: Loc information not available 
+     * 0x7: Rear trunk not closed 
+     * 0x8: Door not closed 
+     * 0x9: External mirror folded 
+     * 0xA: Route planning failed 
+     * 0xB: Low HV battery SOC
+     */
+    optional uint32 VPAWarningInfo=4; //代客泊车报警信息 
+    optional uint32 HPAPathSelectIDInd= 5 ;//    记忆泊车路线选择ID反馈
+
+    /**
+     * 0x0:none 
+     * 0x1:make a way 
+     * 0x2:trun around 
+     * 0x3:by pass 
+     * 0x4:Stop and wait 
+     * 0x5:reverse assistance 
+     * 0x6: pull over 
+     * 0x7: drive off 
+     * 0x8: Cruise drive
+     * 0x9: ready to turn left 
+     * 0xA: ready to turn Right 
+     * 0xB: ready to reach target slot 
+     * 0xC: ready to park in 
+     * 0xD: Parking in 
+     * 0xE:Parking success 
+     * 0xF: Reday to  reach cross 
+     * 0x10: Reday to go through slope
+     * 0x11: Caution pedestrains 
+     * 0x12: Caution vehicles 
+     * 0x13: Caution sorroundings 
+     * 0x14: Release brake pedal( use for special text and voice reminder) 
+     * 0x15: Ready to reach target point
+     * 0x16: Stop and wait vehicle 
+     * 0x17: By pass vehicle 
+     * 0x18: Stop and wait pedestrian 
+     * 0x19: By pass pedestrian 
+     * 0x1A: Start going uphill 
+     * 0x1B: End uphill 
+     * 0x1C: Start going downhill 
+     * 0x1D: End downhill
+     */
+    optional uint32 HPAVPARepalyRemind=6; //记忆泊车代客泊车语音及显示提示 
+
+    optional ADAS_arr_HPATrajectoryPoint HPAVPATrajectory=7; //泊车规划引导线
+    optional uint32 HpaOperationResp=8; //HPA按键状态反馈 0x0: No Response  0x1: Succeed 0x2: Failed
+    optional ADAS_strt_EgoPose HpaEgoVehPos =9; //HPA位姿信息
+    optional uint32 VPADropOffVld =10 ; //代客泊车Drop off 可用性 0x0: not availale 0x1: available
+    optional uint32 VPAPickUpVld =11; //代客泊车Pick up 可用性  0x0: not availale 0x1: available
+    optional uint32 VPASelfMapBuildVld =12; //代客泊车自建地图可用性  0x0: not availale 0x1: available
+    optional uint32 VPAProcessBarInd =13; //代客泊车进度条 %
+    optional uint32 VPAVld =14; //代客泊车可用性 0x0: not availale 0x1: available
+    optional uint32 VPAPickUpPosSelectReq =15; //代客泊车Pick up 位置选择请求 "0x0:No Request 0x1:Request"
+    optional uint32 VPADropOffPosSelectReq =16; //代客泊车Drop off位置选择请求 "0x0:No Request 0x1:Request"
+
+    /**
+     * 0x0 : Off
+     * 0x1 : Passive
+     * 0x2 : Standby
+     * 0x3: Guidance active
+     * 0x4 : Completed
+     * 0x5 : Failure
+     * 0x6 : Terminate
+     * 0x7: Pause
+     * 0x8: Self build map
+     */
+    optional uint32 VPASts =17; //代客泊车状态信息 
+
+    optional uint32 VPAFuncTypeFb =18; //代客泊车当前激活功能类型反馈 0x0 : None  0x1 : Pick up 0x2 : Drop off 0x3: Self build map
+    optional float VPARemainingDist =19; //代客泊车剩余距离
+    optional uint32 HPARequestAPAUI =20; //记忆泊车调用自动泊车UI请求 0x0: No Request 0x1: Request
+    /**
+     * 0x0: None 
+     * 0x1: Please keep vehicle standstill 
+     * 0x2: Please close doors 
+     * 0x3: Please close hood 
+     * 0x4: Please close trunk 
+     * 0x5: Please keep driver seatbelt buckled 
+     * 0x6: System failure
+     * 0x7: Partner ECU error 
+     * 0x8: Partner ECU function active 
+     * 0x9: Available path have been in current paking lot 
+     * 0xA: Path quantity over limit 
+     * 0xB: Path is Saving 
+     * 0xC: Path match failed
+     * 0xD: Not available Area to active HPA 
+     * 0xE: Please press brake pedal 
+     * 0xF: Path is matching 
+     * 0x10: Low HV battery SOC 
+     * 0x11: Please unfold outside mirror 
+     * 0x12: Please remove charger 
+     * 0x13: Other ADAS Active_HPA
+     */
+    optional uint32 HpaActiveCheckSts =21; //记忆泊车激活检测结果反馈 
+     /*
+        0x0: None
+        0x1: Please keep vehicle standstill
+        0x2: Please close doors
+        0x3: Please close hood
+        0x4: Please close trunk
+        0x5: Please keep driver seatbelt buckled
+        0x6: System failure 
+        0x7: Partner ECU error 
+        0x8: Partner ECU function active 
+        0x9: Available path have been in current paking lot
+        0xA: Path quantity over limit
+        0xB: Path is Saving
+        0xC: Path match failed
+        0xD: Not available Area to active HPA
+        0xE: Please press brake pedal
+        0xF: Path is matching
+        0x10: Low HV battery SOC
+        0x11: Please unfold outside mirror
+        0x12: Please remove charger
+        0x13: Other ADAS Active_HPA
+        0x14: Path not available
+     */
+    optional uint32 HPAReplayRecAvl =22; //记忆泊车推荐回放路线可用 0x0: not availale 0x1: available
+    optional uint32 HPAPopup =23; //记忆泊车弹窗 
+       /*
+          0x0: None
+          0x1: TrainPathEnable
+          0x2: TrackPathEnable
+          0x3: CoverOnwayLabel
+          0x4: CoverPath
+          0x5: RPA Without Supervison Notice
+          0x6: RPA Model Select Popup
+          0x7-0xFE: Reserved
+       */
+    optional uint32 HPAStartButtonSts =24; //记忆泊车开始按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+    optional uint32 HPAResumeButtonSts = 25; //记忆泊车恢复按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+    optional uint32 HPARPAButtonSts =26; //记忆泊车切换RPA按钮 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+    optional uint32 CreatPathButtonSts =27; //创建路线图标显示状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+}
+
+// vpa点类型
+message ADAS_strt_VPAPointType {
+    optional float Coordinate_X=1;//X坐标
+    optional float Coordinate_Y=2;//Y坐标
+    optional float Coordinate_Z=3;//Z坐标
+}
+
+// VPA中心道路点的结构
+message ADAS_strt_VPARoadLinePoint {
+    optional ADAS_strt_VPAPointType point = 1;//路线点
+    optional uint32 layer = 2;//所属楼层
+  /*所属楼层
+   0x0: None
+   0x1: L1 Floor
+   0x2: G1 Floor
+   0x3: L2 Floor
+   0x4: G2 Floor
+   0x5: L3 Floor
+   0x6: G3 Floor
+   0x7: L4 Floor
+   0x8: G4 Floor
+   0x9: L5 Floor
+   0xA: G5 Floor
+   0xB-0xFE: Reserved
+  */
+}
+
+// VPA中心道路信息
+message ADAS_arr_VPARoadLine{
+    repeated ADAS_strt_VPARoadLinePoint vpa_road_line_point =1;
+}
+
+// VPA的功能状态信息
+message ADAS_strt_VPAParkingInfo{
+    optional uint32 VPAParkingSts =1; //VPA的状态
+      /*VPA的状态
+        0x0: Unknown
+        0x1: can build map (未开始建图，可以进入建图状态）
+        0x2: building map (已经开始建图）
+        0x3: build map finished, ready to comfirm (建图完成，等待用户确认保存）
+        0x4: build map comfirmed, saving map (用户确认，保存地图中）
+        0x5: build map completed (建图完成，停车场预览）
+        0x6: save map quit (退出建图）
+        0x7: locating map (定位中，匹配地图——
+        0x8: located map (定位完成）
+        0x9: localztion missing (定位丢失，自车已经离开建图区域）
+        0xA-0xF: Reserved
+        0x10: set destination (巡航阶段司机已经选择了设置的巡航库位，可以起自动)
+        0x1A: driving auto (司机已选择目的地起自动）
+        0x1B: parking in process vpa (到库位，进入泊车阶段）
+        0x1C-0x1F: Reserved
+        0x20: Manual driving stage(人工手动驾驶阶段)
+        0x21-0x24: Reserved
+        0x25: During the VPA (Vehicle Parking Assistant) parking space search, if a parking space is occupied, continue the search for available parking spaces（vpa 搜索车位中，车位被占用，继续搜索可泊车位）
+        0x26: VPA's APA parking-out in progress（vpa的apa 泊出中）
+        0x27: VPA's APA is Suspending（vpa的apa暂停中）
+        0x28: VPA's APA in Recoverable Suspension（vpa 的apa暂停可恢复状态）
+        0x29: VPA Interrupted（vpa中断）
+        0x2A-0x2F: Reserved
+        0x30: VPA's APA Parking Standby (Target Spot Selection Pending)（vpa的apa泊入准备(等待用户选库)）
+        0x31-0x39: Reserved
+        0x3A: In-Lot Direct Park-Out readiness（停车场内直接可泊出状态）
+        0x3B-0xFE: Reserved
+      */
+    optional uint32 VPAParkingQuitInd = 2; //VPA退出提示
+    optional uint32 VPAParkingDriOperateInd = 3; //VPA驾驶员操作提示
+      /*VPA驾驶员操作提示
+        0x0: Not Active
+        0x1: indicates that the user can learn（提示用户可以学习）
+        0x2: Prompts the user to keep the vehicle speed below 20kph（提示用户需要保持车速低于20kph）
+        0x3: Reminds the user to hang P file to complete learning（提醒用户可以泊入库位挂P档完成学习）
+        0x4: Alert reaches map edge, search ends（提醒到达地图边缘，搜索结束）
+        0x5-0x1F: Reserved
+        0x20: Please fasten your seat belt, learn your route, and unlock your valet parking“请系好安全带，再学习路线，解锁代客泊车"
+        0x21: Please close the front hatch cover and re-learn the route to unlock valet parking "请关闭前舱盖板，再学习路线，解锁代客泊车"
+        0x22: Please close the tailgate and learn the route again to unlock valet parking "请关闭尾门，再学习路线，解锁代客泊车"
+        0x23: Please close the door, learn the route, unlock the valet parking“请关上车门，再学习路线，解锁代客泊车”
+        0x24: You can also learn x meters, park in the parking space and click Finish “还可以学习x米，泊入车位再点击完成”
+        0x25: Please reduce the speed to within 20km/h 请降低车速到20km/h以内
+        0x26: The learning distance needs to be more than 10 meters 学习距离需要超过10米
+        0x27: Hang P file and click to finish building 挂P档，点击完成建图
+        0x28: Locating 定位中...
+        0x29: Continue for x meters 继续行驶x米
+        0x2A-0x2F: Reserved
+        0x30: The parking space is occupied. Search for parking space for you 库位被占，为您搜索可泊车位
+        0x31-0x39: Reserved
+        0x3A: Yield to pedestrians 礼让行人
+        0x3B-0xFE: Reserved
+      */
+    optional uint32 VPAParkingPauseInd = 4; //VPA暂停提示
+    optional uint32 VPAParkingFailureReasonInd = 5; //VPA故障原因
+      /*VPA故障原因
+        0x0: None
+        0x1: build map abort
+        0x2: build map abort oversped
+        0x3: build map abort system error
+        0x4: build map abort camera abnormal
+        0x5-0xFE: Reserved
+      */
+    optional uint32 VPAParkingVoiceRemind = 6; //VPA语音提示
+      /*VPA语音提示
+        0x0: Not Active
+        0x1: vpa auto driving start
+        0x2: vpa auto driving emd
+        0x3: vpa parking start
+        0x4: vpa parking end
+        0x5: can start build map
+        0x6-0xFE: Reserved
+      */
+    optional float VPABuildMapDistance = 7; //VPA建图距离
+    optional uint32 VPABuildMapProgress = 8; //VPA生成大地图的进度
+    optional uint32 VPABuildMapParkingSlotNumber = 9; //VPA已经学习的车位数量
+    optional uint32 VPABuildMapLayerNumber = 10; //VPA已经 学习了多少层
+    optional uint32 VPACurrentLayer = 11; //VPA车辆所在当前层
+      /*VPA车辆所在当前层
+        0x0: None
+        0x1: L1 Floor
+        0x2: G1 Floor
+        0x3: L2 Floor
+        0x4: G2 Floor
+        0x5: L3 Floor
+        0x6: G3 Floor
+        0x7: L4 Floor
+        0x8: G4 Floor
+        0x9: L5 Floor
+        0xA: G5 Floor
+        0xB-0xFE: Reserved
+      */
+    optional float VPACurisingDistance = 12; //VPA巡航剩余距离
+    optional ADAS_arr_VPARoadLine VPAGlobalRouting = 13; //VPA全局轨迹线
+    optional ADAS_arr_TrajectoryPoint VPADrivingTrajectoryPoint = 14; //决策引导线
+    optional uint32 VPACurrentParkingLotID = 15; //当前位于的停车场ID
+    optional float VPABuildMapMaxDistance = 16; //支持的最大建图距离
+    optional uint32 VPACrusingProgress = 17; //代客泊车进度条
+    optional uint32 VPARpaToggleBtnDisp = 18; //是否显示遥控泊车开关
+    optional uint32 VPAButtonStatus = 19; //驾驶员请求手动建图反馈信号
+}
+
+//ADAS_strt_MRAInfo_2 兼容 ADAS_strt_MRAInfo  循迹倒车功能输出信息
+message ADAS_strt_MRAInfo
+{
+    optional uint32 MRASts = 1; //循迹倒车状态信息
+   /*循迹倒车状态信息
+     0x0: OFF
+     0x1: Standby
+     0x2: Background Record
+     0x3: Preparing
+     0x4: Guidance
+     0x5: Finish and reset
+     0x6: failure
+     0x7: Terminate
+     0x8: Pause
+   */
+    optional float MRATrajRecordDist =2 ;//循迹倒车记录路径长度
+    optional uint32 MRACheckSts =3 ;//循迹倒车不能激活原因
+    /*循迹倒车不能激活原因
+        0x0:None
+        0x1:Other Park funtion manuvering
+        0x2: No valid trajectory
+        0x3: Vehicle not standstill
+        0x4: Trailer attached
+        0x5: EV charge plug connected
+        0x6: Emergency assist active
+        0x7: EOL mode detected
+        0x8: Please close doors
+        0x9: Please close hood
+        0xA: Please close trunk
+        0xB: Please keep driver seatbelt buckled
+        0xC: Please unfold outside mirror
+        0xD: Please press brake pedal and continue MRA
+        0xE: Please continue MRA
+        0xF: MRA will complete
+        0x10: Please press brake pedal
+        0x11: NO PT Ready
+        0x12: MRA completed
+        0x13: Other ADAS Active
+        0x14: ADAS system failure
+        0x15: Partner system failure
+        0x16: Collision_Occurs
+        0x17: ODD over limited
+        0x18: MRA eixted
+        0x19: Interrupt_Times_Overflow, MRA eixted
+        0x1A: Speed high, MRA eixted
+        0x1B: Timing overflow, MRA eixted
+        0x1C: ADAS system failure, MRA eixted
+        0x1D: Partner system failure, MRA eixted
+        0x1E: ODD over limited, MRA eixted
+        0x1F: Parking Function Failure, MRA eixted
+        0x20: AEB_Active, MRA has been eixted
+        0x21: Wheel_Blocked, MRA eixted
+        0x22: Record Speed high, MRA eixted
+        0x23: Other ADAS Active, MRA eixted
+        0x24: DrivingMode switch, MRA eixted
+        0x25: Collision Occurs, MRA eixted
+    */
+    optional float MRATrajRemainingDist =4; //循迹倒车剩余距离
+    /*
+        0x0: not availale
+        0x1: available
+    */
+    optional uint32 MRAAvaliableStatus =5 ;//循迹倒车可用状态
+    optional ADAS_arr_TrajectoryPoint MRATrajectory =6; //循迹倒车引导线
+    optional uint32 MraOperationResp =7 ;//MRA按键状态反馈 0x0: No Response  0x1: Succeed 0x2: Failed
+    optional uint32 MRAStartButtonSts =8;//开始倒车按钮可用状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+    optional uint32 MRAResumeButtonSts =9;//恢复倒车按钮可用状态 0x0: None 0x1: Not Available 0x2: Available 0x3: FuntionActive
+}
+
+//MEB功能输出信息
+message ADAS_enum_MEBSts
+{
+  /**
+   *0x0: OFF
+   *0x1: On
+   *0x2: Active
+   *0x3: Failure
+   *0x4: Passive
+  */
+  optional uint32 meb_status = 1;
+}
+
+//MAA功能输出信息
+message ADAS_enum_MAASts
+{
+  /**
+   *0x0: Off
+   *0x1: On
+   *0x2: Active
+   *0x3: Failure"
+  */
+  optional uint32 maa_status = 1 ;
+}
+
+//**************************0xAB01************************//
+//SVS状态
+message ADAS_strt_SensorSt{
+  optional uint32 ADASSysSts              = 1; //ADAS系统状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FLCameraSysSts          = 2; //左前摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FLCameraCalSts          = 3; //左前摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 FRCameraSysSts          = 4; //右前摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FRCameraCalSts          = 5; //右前摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 RLCameraSysSts          = 6; //左后摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 RLCameraCalSts          = 7; //左后摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 RRCameraSysSts          = 8; //右后摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 RRCameraCalSts          = 9; //右后摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 RearCameraSysSts        = 10; //后摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 RearCameraCalSts        = 11; //后摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 FrontFarCameraSysSts    = 12; //前远距摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FrontFarCameraCalSts    = 13; //前远距摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 FrontNearCameraSysSts = 14; //前广角摄像头故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FrontNearCameraCalSts = 15; //前广角摄像头状标定态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 MainLidarSysSts          = 16; //主激光雷达故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 MainLidarCalSts          = 17; //主激光雷达标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 FLLidarSysSts            = 18; //前左激光雷达故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FLLidarCalSts            = 19; //前左激光雷达标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 FRLidarSysSts            = 20; //前右激光雷达故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 FRLidarCalSts            = 21; //前右激光雷达标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 SVSFrontCameraSysSts    = 22; //前环视相机故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 SVSLeftCameraSysSts      = 23; //左环视相机故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 SVSRightCameraSysSts    = 24; //右环视相机故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 SVSRearCameraSysSts      = 25; //后环视相机故障状态    "0x0: Normal;0x1: Blockage;0x2: failure;0x3: reserved"
+  optional uint32 SVSFrontCameraCalSts  = 26; //前环视相机标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 SVSLeftCameraCalSts      = 27; //左环视相机标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 SVSRightCameraCalSts  = 28; //右环视相机标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+  optional uint32 SVSRearCameraCalSts      = 29; //后环视相机标定状态    "0x0: not calibration;0x1: in calibrating;0x2: calibrated;0x3: reserved"
+}
+
+//**************************0xA995************************//
+message ICC_Strt_ADASSettingInfo {
+  optional uint32 ICAEnableBtnSts    = 1; //ICA功能使能开关       0x0: None;0x1: ON;0x2: Off;0x3: reserved                        
+  optional uint32 FSRASpdSetMod    = 2; //巡航速度调整方式设置（无开关）    "0x0: Mode1(短按+5);0x1: Mode2(短按+1)"
+  optional uint32 FSRACruiseSpdMod    = 3; //设定巡航车速模式         "0x0: None;0x1: Current speed mode;0x2: ISLI mode;0x3: reserved"                
+  optional uint32 FSRACruiseSpdOffsetMod    = 4; //设定偏移方式        "0x0: fixed;0x1: percent"                 
+  optional int32  FSRACruiseSpdOffsetSpd    = 5; //固定偏移速度        -10~10kph (res:1kph)                 
+  optional int32  FSRACruiseSpdOffsetPercent    = 6; //百分比偏移速度        -20%~20%(res:1%)           
+  optional uint32 ISLIWarnMod    = 7; //智能限速提醒方式        "0x0: None;0x1: Display warning;;0x2: Sound+display warning;0x3: Off"                         
+  optional uint32 ISLISpdOffsetMod    = 8; //限速设置方式（预留）      "0x0: None;0x1: relative limit;0x2: abs limit;0x3: reserved"                 
+  optional int32  ISLICruiseSpdRelOffset    = 9; //相对限制值（预留）       -20%~20%(res:1%)            
+  optional uint32 ISLICruiseSpdAbdOffset    = 10; //绝对限制值（预留）     40~140kph(res: 1kph)              
+  optional uint32 FCWWarnDistance    = 11; //FCW报警距离限制       "0x0: None;0x1: Close;0x2: Far;0x3: Normal"                      
+  optional uint32 FCWSettingSt    = 12; //FCW功能设置状态       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                         
+  optional uint32 AEBSettingSt    = 13; //AEB功能设置状态        "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                        
+  optional uint32 LKSSettingSt    = 14; //LDW/LDP功能设置状态        "0x0: None;0x1: Warning;0x2: Warning+intervention;0x3: Off;0x4: Intervention;0x5-0xFE: Reserved"                
+  optional uint32 LDWWarnType    = 15; //LDW/LDP报警方式        "0x0: None;0x1: warning only;0x2: warning and vibration;0x3: Off"                        
+  optional uint32 ELKSettingSt    = 16; //ELK功能设置状态       "0x0: None;0x1: On;0x2: Off;0x3: reserved"                         
+  optional uint32 BSDSettingSt    = 17; //BSD/LCW功能设置状态       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                    
+  optional uint32 DOWSettingSt    = 18; //DOW功能设置状态        "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                      
+  optional uint32 ICAplusSettingSt    = 19; //直行红绿灯启停设置状态       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"              
+  optional uint32 FCTAWarnType    = 20; //FCTA报警方式      "0x0: Off;0x1:warning only;0x2:warning and brake;0x3: None"                             
+  optional uint32 RCTAWarnType    = 21; //RCTA报警方式      "0x0: Off;0x1: warning only;0x2: warning and brake;0x3: None"                           
+  optional uint32 ESASettingSt    = 22; //ESA功能设置状态         "0x0: None;0x1: ESS;0x2: ESS+AES;0x3: Off"                       
+  optional uint32 AMAPSettingSt    = 23; //AMAP功能设置状态       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                        
+  optional uint32 NOPEnableBtnSts    = 24; //NOP功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"           
+  optional uint32 VoiceRemindSettingMode    = 25; //语音播报模式       "0x0: None;0x1: Detail;0x2: Simple;0x3: reserved"                 
+  optional uint32 NOPLaneChangeStyle    = 26; //NOP超车变道风格        "0x0: None;0x1: Basic;0x2: Normal;0x3: Radical;0x4: Close"                   
+  optional uint32 NOPLaneChangeMod    = 27; //NOP变道模式        "0x0: None ;0x1: Automatic Lane Change ;0x2: Driver Confirmed lane change"        
+  optional uint32 NOPLaneChangeWarnType    = 28; //NOP变道提醒模式       "0x0: None;0x1: warning only;0x2: warning and vibration;0x3: Off"                   
+  optional uint32 U_NOPEnableBtnSts    = 29; //城区NOP功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"              
+  optional uint32 HPASettingSt    = 30; //记忆泊车功能使能开关      "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                       
+  optional uint32 VPASettingSt    = 31; //代客泊车功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                    
+  optional uint32 APASettingSt    = 32; //自动泊车功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                      
+  optional uint32 VoiceRemindSettingSt    = 33; //语音播报功能设置开关       "0x0: None;0x1: ON;0x2: Off;0x3: reserved"              
+  optional uint32 DrivingVoiceRemindSettingSt    = 34; //行车语音播报功能设置开关       "0x0: None;0x1: ON;0x2: Off;0x4: reserved"   
+  optional uint32 NRASettingSt    = 35; //窄路辅助使能开关        "0x0: None;0x1: ON;0x2: Off;0x3: reserved"                       
+  optional uint32 RPASetSettingSt    = 36; //遥控泊车设置项开关        "0x0: None;0x1: ON;0x2: OFF;0x3: Not Used"                    
+  optional uint32 ParkingSpeedSettingSt    = 37; //泊车速度设置开     "0x0: None;0x1: SpeedSlow;0x2: SpeedNormal;0x3: SpeedFast;0x4: reserved"                   
+  optional uint32 HPACrusingSpeedSettingSt    = 38; //泊车巡航车速设置项开关       "0x0: None;0x1: SpeedSlow;0x2: SpeedNormal;0x3: SpeedFast;0x4: reserved"        
+  optional uint32 MEBSwtSet    = 39; //MEB设置项开关         "0x0: None;0x1: ON;0x2: OFF;0x3: Not Used"                              
+  optional uint32 AMAPSwtSet    = 40; //加速踏板防误踩设置项开关        "0x0: None;0x1: ON;0x2: OFF;0x3: Not Used"                    
+  optional uint32 MNPEnableBtnSt    = 41; //记忆领航功能使能开关        "0x0: None;0x1: ON;0x2: Off;0x3: Reserved"                   
+  optional uint32 LccPlusEnableBtnSt    = 42; //巡航增强功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3: Reserved"               
+  optional uint32 LKSWarnSensitivity    = 43; //LKS预警灵敏度       "0x0: None;0x1: Low;0x2: High;0x3: Reserved"                      
+  optional uint32 DAIEnableBtnSt    = 44; //DAI功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3: Reserved"                        
+  optional uint32 IHCEnableBtnSt    = 45; //IHC功能使能开关        "0x0: None;0x1: ON;0x2: off;0x3: reserved"                       
+  optional int32  ISLICruiseSpdOffsetAbd    = 46; //固定限速偏移量       -20~20kph (res:1kph)                
+  optional uint32 MNPNewBtnSt    = 47; //新建路线按钮       "0x0：None;0x1：NO;0x2：YES;0x3：Not Reminder;0x4-0xFE: Reserved"                             
+  optional uint32 MNPMemRouteQuitBtnSt    = 48; //退出路线学习按钮        "0x0: None;0x1: NO;0x2: YES;0x3: Not Reminder"                
+  optional uint32 MNPUseRouteQuitBtnSt    = 49; //退出路线使用按钮       "0x0: None;0x1: NO;0x2: YES"                
+  optional uint32 MNPMemRouteCompleteBtnSt    = 50; //路线记忆结束按钮        "0x0: None;0x1: NO;0x2: YES;0x3: SAVE"            
+  optional string MNPMemRouteNewName    = 51; //修改后的记忆路线名称                      
+  optional uint32 MNPDelRouteIDBtnSt    = 52; //删除的记忆路线ID                          
+  optional uint32 MNPUseRouteIDBtnSt    = 53; //选中使用的记忆路线ID                      
+  optional string MNPRouteNewName    = 54; //修改后的记忆路线名称                          
+  optional string MNPDelRouteID    = 55; //删除的记忆路线ID                                
+  optional string MNPUseRouteID    = 56; //选中使用的记忆路线ID                          
+  optional string MNPRenameRouteID    = 57; //修改名称的记忆路线ID                        
+  optional string NewMemRouteStartName    = 58; //当前记忆中的路线起点名称                
+  optional string NewMemRouteEndName    = 59; //当前记忆中的路线终点名称                  
+  optional uint32 MNPAllRoutesInfoReq    = 60; //请求获取全部记忆路线信息       "0x0: No request;0x1: Request;0x2-0xFE: Reserved"            
+  optional string MNPRouteInfoReq    = 61; //请求当前记忆路线信息                          
+  optional uint32 HNOACruiseSpdOffsetMod    = 62; //设定车速偏移方式       "0x0: None;0x1: Fixed;0x2: Percent;0x3-0xFE: Reserved"              
+  optional int32  HNOACruiseSpdOffsetSpd    = 63; //固定偏移速度      -20~20kph (res:1kph)                   
+  optional uint32 TSREnableBtnSt    = 64; //TSR功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3-0xFE: Reserved"                        
+  optional uint32 TLREnableBtnSt    = 65; //TLR功能使能开关       "0x0: None;0x1: ON;0x2: Off;0x3-0xFE: Reserved"                        
+  optional uint32 TLAEnableBtnSt    = 66; //TLA功能使能开关       0x0: None;0x1: ON;0x2: Off;0x3: Function Description;0x4-0xFE: Reserved                        
+  optional uint32 HandsOffWarningStyle    = 67; //脱手报警风格      "0x0: None;0x1: Standard;0x2: Comfortable;0x3-0xFE: Reserved"                     
+  optional uint32 VoiceControlLaneChange    = 68; //语音变道指令      "0x0: None;0x1: Turn left;0x2: Turn right;0x3-0xFE: Reserved"                  
+  optional uint32 VoiceControlCruiseSpeedAdjust    = 69; //语音巡航速度调节指令     "0x0: None;0x1: Increase;0x2: Decrease;0x3-0xFE: Reserved"    
+  optional uint32 VoiceControlCruiseSpeed    = 70; //语音巡航调节速度值     
+  /**
+   *0x0: None
+   *0x1: Time Gap1
+   *0x2: Time Gap2
+   *0x3: Time Gap3
+   *0x4: Time Gap4
+   *0x5: Time Gap5
+   *0x6: Time Gap Increase
+   *0x7: Time Gap Decrease
+   *0x8: Time Gap Max
+   *0x9: Time Gap Min
+   *0xA-0xFE: Reserved"
+  */               
+  optional uint32 VoiceControlCruiseDistanceAdjust    = 71; //语音巡航距离调节指令     
+
+  optional uint32 NOALCCSwitchBtnSts    = 72; //NOA与LCC切换指令      "0x0: None;0x1: NOA switch to LCC;0x2: LCC switch to NOA;0x3-0xFE: Reserved"                   
+  optional uint32 DetourAroundObstacleBtnSt    = 73; //借道绕行障碍物软开关       0x0: None;0x1: On;0x2: Off;0x3: Function Description;0x4-0xFE: Reserved         
+  optional uint32 EfficientPassageBtnSt    = 74; //高效通行软开关      0x0: None;0x1: On;0x2: Off;0x3: Function Description;0x4-0xFE: Reserved                   
+  optional uint32 IntelligentEvasionBtnSt    = 75; //智慧躲闪软开关      0x0: None;0x1: On;0x2: Off;0x3: Function Description;0x4-0xFE: Reserved                 
+  optional uint32 RADSEnableBtnSt    = 76; //循迹倒车软开关     0x0: None;0x1: On;0x2: Off;0x3: Function Description;0x4-0xFE: Reserved                          
+  optional uint32 OutsideParkingBtnSt    = 77; //离车泊入软开关      0x0: None;0x1: On;0x2: Off;0x3: Function Description;0x4-0xFE: Reserved                     
+  optional uint32 RGearDefaultFunctionBtnSt    = 78; //R挡默认打开项设置       0x0: None;0x1: Auto Parking;0x2: Reverse Camera;0x3: Failure;0x4-0xFE: Reserved            
+  optional uint32 RecordUploadBtn    = 79; //录音数据回传按钮       0x0: None;0x1: upload;0x2: not Upload;0x3-0xFE: Reserved                      
+  optional uint32 DatauploadBtn    = 80; //一键数据回传使能      0x0: None;0x1: Trigger;0x2-0xFE: Reserved                         
+}
+
+//control数据message整合
+message Control_Info {
+    optional icc_enum_parking_func_mod_req parking_func_mod_req = 1; //泊车子功能选择
+    optional ICC_strt_VpaFcnOperating vpa_fcn_operating= 2; //VPA功能输入信息
+    optional ICC_enum_MRA_OperationId mra_operation_id = 3; //MRA功能输入信息
+    optional ICC_strt_ApaRpaFcnOperating apa_rpa_fcn_operating2 =4; //APARPA功能输入信息
+    optional ICC_strt_HpaFcnOperating hpa_fcn_operating =5; //HPA功能输入信息
+    optional ICC_Strt_ADASSettingInfo adas_setting_info = 6; //ADAS功能设置信息
+}
+
+message Apa_State_Machine{
+  optional  ADAS_enum_SVS_Sts             svs_sts = 1; //SVS功能状态
+  optional  ADAS_strt_ParkingGenaralInfo  parking_genaral_info2 = 2; //HPA巡航泊车子功能汇总信息  /* huohognming  2025.9.18 chery adtc 因为与其他信号重复，所以删掉 */
+  optional  ADAS_strt_APARPAInfo          apa_rpa_info = 3; //APA RPA功能输出信息
+  optional  ADAS_strt_AdvanceParkingInfo  advance_parking_info = 4; //HPA  VPA 功能输出状态
+  optional  ADAS_strt_VPAParkingInfo      vpa_parking_info = 5; //VPA功能汇总信息
+  optional  ADAS_strt_MRAInfo             mra_info = 6; //循迹倒车功能输出信息
+  optional  ADAS_strt_SensorSt            sensor_st = 7; //ADAS 控制器及传感器状态信息
+  optional  ADAS_enum_MEBSts              meb_sts = 8; //MEB功能输出信息
+  optional  ADAS_enum_MAASts              maa_sts = 9; //MAA功能输出信息
+}
+
+//***********************Control服务定义**********************//
+service Chery_Control_service {
+  rpc NtfParkingStateMachineStr( chery_request )  // 泊车状态机显示
+  returns (stream Apa_State_Machine);     // 实时返回 泊车状态的内容
+
+  // -----------------------------------------------------------//
+  //泊车子功能选择  选择泊车功能
+  rpc NtfParkingFuncModReq ( Control_Info ) // 选择泊车功能 选择1 说明没有选择                    1 属于default  没有功能
+  returns (chery_response );    //0x0：响应成功   0x1：响应失败
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
