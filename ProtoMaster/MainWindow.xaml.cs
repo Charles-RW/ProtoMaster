@@ -153,27 +153,25 @@ namespace ProtoMaster
                 if (File.Exists(_layoutConfigPath))
                 {
                     var layoutSerializer = new AvalonDock.Layout.Serialization.XmlLayoutSerializer(DockingManager);
-                    
+
                     layoutSerializer.LayoutSerializationCallback += (s, e) =>
                     {
                         Debug.WriteLine($"LayoutSerializationCallback: ContentId={e.Model.ContentId}");
-                        
-                        // 确保必要的面板被正确恢复
+
+                        // 把序列化器里要求的 content 映射到当前窗口中“真实”的 UI 内容实例（UserControl / Grid 等）
+                        // 避免序列化器创建一个新的 LayoutAnchorable 包裹一个新的 Content 实例，
+                        // 从而导致运行时出现两个相同功能的 Anchorable（UI 与代码引用不一致）
                         switch (e.Model.ContentId)
                         {
                             case "CommonData":
                                 e.Content = CommonDataAnchorable.Content;
                                 e.Cancel = false;
-                                Debug.WriteLine("Restored CommonData content");
+                                Debug.WriteLine("Restored CommonData content (mapped to existing content)");
                                 break;
                             case "PluginData":
                                 e.Content = PluginDataAnchorable.Content;
                                 e.Cancel = false;
-                                Debug.WriteLine("Restored PluginData content");
-                                break;
-                            case "MainView":
-                                e.Cancel = false;
-                                Debug.WriteLine("Restored MainView");
+                                Debug.WriteLine("Restored PluginData content (mapped to existing content)");
                                 break;
                             default:
                                 Debug.WriteLine($"Unknown content id: {e.Model.ContentId}");
@@ -184,6 +182,43 @@ namespace ProtoMaster
                     using var reader = new StreamReader(_layoutConfigPath);
                     layoutSerializer.Deserialize(reader);
                     Debug.WriteLine("Layout deserialized successfully");
+
+                    var anchorables = DockingManager.Layout.Descendents().OfType<LayoutAnchorable>().ToList();
+
+                    // 处理 CommonData
+                    var commonGroup = anchorables.Where(a => a.ContentId == "CommonData").ToList();
+                    if (commonGroup.Count > 0)
+                    {
+                        // 尝试找到已正确引用我们 content 的 model，否则选第一个作为保留者并替换其 Content
+                        var keeper = commonGroup.FirstOrDefault(a => ReferenceEquals(a.Content, CommonDataAnchorable.Content))
+                                    ?? commonGroup[0];
+                        // 确保 keeper 使用真实 content
+                        //keeper.Content = CommonDataAnchorable.Content;
+                        CommonDataAnchorable = keeper;
+                        // 删除其余重复 model
+                        foreach (var extra in commonGroup.Where(a => !ReferenceEquals(a, keeper)).ToList())
+                        {
+                            if (extra.Parent is LayoutAnchorablePane parentPane)
+                                parentPane.Children.Remove(extra);
+                        }
+                    }
+
+                    // 处理 PluginData（同上）
+                    var pluginGroup = anchorables.Where(a => a.ContentId == "PluginData").ToList();
+                    if (pluginGroup.Count > 0)
+                    {
+                        var keeper = pluginGroup.FirstOrDefault(a => ReferenceEquals(a.Content, PluginDataAnchorable.Content))
+                                    ?? pluginGroup[0];
+                        PluginDataAnchorable = keeper;
+                        foreach (var extra in pluginGroup.Where(a => !ReferenceEquals(a, keeper)).ToList())
+                        {
+                            if (extra.Parent is LayoutAnchorablePane parentPane)
+                                parentPane.Children.Remove(extra);
+                        }
+                    }
+
+                    // 同步菜单状态，确保 UI 与菜单一致
+                    Dispatcher.BeginInvoke(() => SyncMenuStates(), DispatcherPriority.ApplicationIdle);
                 }
                 else
                 {
@@ -193,7 +228,6 @@ namespace ProtoMaster
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to load layout: {ex.Message}");
-                // 如果加载失败，确保使用默认布局
                 EnsureDefaultLayout();
             }
         }
