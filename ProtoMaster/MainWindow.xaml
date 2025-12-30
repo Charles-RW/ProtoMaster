@@ -17,6 +17,58 @@
             <Setter Property="Background" Value="{DynamicResource SeparatorBrush}"/>
         </Style>
         
+        <!-- TreeView右键菜单样式 -->
+        <Style x:Key="TreeNodeContextMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+        
+        <Style x:Key="TreeNodeMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- TreeView节点右键菜单 -->
+        <ContextMenu x:Key="TreeNodeContextMenu" Style="{StaticResource TreeNodeContextMenuStyle}">
+            <MenuItem Header="同步到对应节点" Style="{StaticResource TreeNodeMenuItemStyle}"
+                      Click="SyncToCorrespondingNode_Click">
+                <MenuItem.Icon>
+                    <Path Data="M12,18.5L21,9.53L19.59,8.12L12,15.67L4.41,8.09L3,9.5L12,18.5M12,12.5L21,3.53L19.59,2.12L12,9.67L4.41,2.09L3,3.5L12,12.5Z" 
+                          Fill="{DynamicResource PrimaryTextBrush}" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="展开全部子节点" Style="{StaticResource TreeNodeMenuItemStyle}"
+                      Click="ExpandAllNodes_Click">
+                <MenuItem.Icon>
+                    <Path Data="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" 
+                          Fill="{DynamicResource PrimaryTextBrush}" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <MenuItem Header="折叠全部子节点" Style="{StaticResource TreeNodeMenuItemStyle}"
+                      Click="CollapseAllNodes_Click">
+                <MenuItem.Icon>
+                    <Path Data="M19,13H5V11H19V13Z" 
+                          Fill="{DynamicResource PrimaryTextBrush}" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+            <Separator/>
+            <MenuItem Header="复制节点数据 (JSON)" Style="{StaticResource TreeNodeMenuItemStyle}"
+                      Click="CopyNodeAsJson_Click">
+                <MenuItem.Icon>
+                    <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" 
+                          Fill="{DynamicResource PrimaryTextBrush}" Width="16" Height="16"/>
+                </MenuItem.Icon>
+            </MenuItem>
+        </ContextMenu>
+        
         <!-- AvalonDock Theme Style -->
         <!--<Style TargetType="{x:Type dock:DockingManager}">
         </Style>-->
@@ -126,6 +178,7 @@
                                         <Style TargetType="TreeViewItem">
                                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                                            <Setter Property="ContextMenu" Value="{StaticResource TreeNodeContextMenu}"/>
                                         </Style>
                                     </TreeView.ItemContainerStyle>
                                 </TreeView>
@@ -183,7 +236,8 @@
                                           BorderThickness="0" VirtualizingPanel.IsVirtualizing="True"
                                           VirtualizingPanel.VirtualizationMode="Recycling"
                                           Background="{DynamicResource TreeViewBackgroundBrush}"
-                                          Tag="{Binding ElementName=PluginNameCol, Path=Width}">
+                                          Tag="{Binding ElementName=PluginNameCol, Path=Width}"
+                                          SelectedItemChanged="PluginDataTreeView_SelectedItemChanged">
                                     <TreeView.ItemTemplate>
                                         <HierarchicalDataTemplate ItemsSource="{Binding Children}">
                                             <Grid>
@@ -202,6 +256,7 @@
                                         <Style TargetType="TreeViewItem">
                                             <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                                             <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}"/>
+                                            <Setter Property="ContextMenu" Value="{StaticResource TreeNodeContextMenu}"/>
                                         </Style>
                                     </TreeView.ItemContainerStyle>
                                 </TreeView>

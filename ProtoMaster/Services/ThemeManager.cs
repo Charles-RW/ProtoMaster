@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Windows;
 
 namespace ProtoMaster.Services;
@@ -17,7 +18,16 @@ public static class ThemeManager
 
     public static event EventHandler<AppTheme>? ThemeChanged;
 
-    public static void ApplyTheme(AppTheme theme)
+    /// <summary>
+    /// 初始化主题管理器，从设置中加载主题
+    /// </summary>
+    public static void Initialize()
+    {
+        var savedTheme = SettingsManager.GetTheme();
+        ApplyTheme(savedTheme, saveToSettings: false); // 初始化时不需要保存
+    }
+
+    public static void ApplyTheme(AppTheme theme, bool saveToSettings = true)
     {
         _currentTheme = theme;
 
@@ -28,7 +38,7 @@ public static class ThemeManager
             _ => new Uri("Themes/DarkTheme.xaml", UriKind.Relative)
         };
 
-        // 移除现有主题
+        // 移除旧主题
         var existingTheme = Application.Current.Resources.MergedDictionaries
             .FirstOrDefault(d => d.Source?.OriginalString.Contains("Theme.xaml") == true);
 
@@ -41,7 +51,15 @@ public static class ThemeManager
         var newTheme = new ResourceDictionary { Source = themeUri };
         Application.Current.Resources.MergedDictionaries.Add(newTheme);
 
+        // 保存主题设置
+        if (saveToSettings)
+        {
+            SettingsManager.SaveTheme(theme);
+        }
+
         ThemeChanged?.Invoke(null, theme);
+
+        System.Diagnostics.Debug.WriteLine($"Theme changed to: {theme}");
     }
 
     public static void ToggleTheme()

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using AvalonDock;
 using AvalonDock.Layout;
@@ -46,6 +47,10 @@ namespace ProtoMaster
         private readonly Dictionary<string, TreeNodeModel> _commonFileNodeCache = new();
         private readonly Dictionary<string, TreeNodeModel> _pluginFileNodeCache = new();
 
+        // 节点对应关系缓存
+        private readonly Dictionary<string, TreeNodeModel> _nodeIdToCommonNodeMap = new();
+        private readonly Dictionary<string, TreeNodeModel> _nodeIdToPluginNodeMap = new();
+
         // AvalonDock 布局保存/恢复
         private string _layoutConfigPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
@@ -53,6 +58,9 @@ namespace ProtoMaster
 
         // 帧数据结构
         private record FrameData(string FileName, int DataId, TreeNodeModel? CommonNode, TreeNodeModel? PluginNode);
+
+        // 防止递归选择的标志
+        private bool _isSelectingCorrespondingNode = false;
 
         public MainWindow()
         {
@@ -66,8 +74,14 @@ namespace ProtoMaster
             };
             _batchUpdateTimer.Tick += BatchUpdateTimer_Tick;
 
+            // 同步主题菜单状态
+            SyncThemeMenuStates();
+            
+            // 监听主题变化事件
+            ThemeManager.ThemeChanged += OnThemeChanged;
+
             // 设置 AvalonDock 主题
-            SetAvalonDockTheme(isDark: true);
+            SetAvalonDockTheme(ThemeManager.CurrentTheme == AppTheme.Dark);
 
             LoadPlugins();
             
@@ -80,30 +94,33 @@ namespace ProtoMaster
             this.Loaded += MainWindow_Loaded;
         }
 
-        private void SetupPanelEventHandlers()
+        /// <summary>
+        /// 主题变化事件处理
+        /// </summary>
+        private void OnThemeChanged(object? sender, AppTheme theme)
         {
-            // 监听面板可见性变化事件，自动同步菜单状态
-            CommonDataAnchorable.IsVisibleChanged += (sender, e) =>
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    MenuShowCommonData.IsChecked = CommonDataAnchorable.IsVisible;
-                    Debug.WriteLine($"CommonData visibility changed: {CommonDataAnchorable.IsVisible}");
-                });
-            };
+            // 同步主题菜单状态
+            SyncThemeMenuStates();
+            
+            // 更新 AvalonDock 主题
+            SetAvalonDockTheme(theme == AppTheme.Dark);
+        }
 
-            PluginDataAnchorable.IsVisibleChanged += (sender, e) =>
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    MenuShowPluginData.IsChecked = PluginDataAnchorable.IsVisible;
-                    Debug.WriteLine($"PluginData visibility changed: {PluginDataAnchorable.IsVisible}");
-                });
-            };
+        /// <summary>
+        /// 同步主题菜单状态
+        /// </summary>
+        private void SyncThemeMenuStates()
+        {
+            var isDarkTheme = ThemeManager.CurrentTheme == AppTheme.Dark;
+            MenuDarkTheme.IsChecked = isDarkTheme;
+            MenuLightTheme.IsChecked = !isDarkTheme;
         }
 
         protected override void OnClosed(EventArgs e)
         {
+            // 取消主题变化事件监听
+            ThemeManager.ThemeChanged -= OnThemeChanged;
+            
             SaveLayout();
             base.OnClosed(e);
         }
@@ -158,7 +175,7 @@ namespace ProtoMaster
                     {
                         Debug.WriteLine($"LayoutSerializationCallback: ContentId={e.Model.ContentId}");
 
-                        // 把序列化器里要求的 content 映射到当前窗口中“真实”的 UI 内容实例（UserControl / Grid 等）
+                        // 把序列化器里要求的 content 显示到当前窗口中"真实"的 UI 内容实例（UserControl / Grid 等）
                         // 避免序列化器创建一个新的 LayoutAnchorable 包裹一个新的 Content 实例，
                         // 从而导致运行时出现两个相同功能的 Anchorable（UI 与代码引用不一致）
                         switch (e.Model.ContentId)
@@ -291,12 +308,74 @@ namespace ProtoMaster
             if (frame.CommonNode != null)
             {
                 commonFileNode.Children.Add(frame.CommonNode);
+                // 建立节点映射
+                RegisterNodeMapping(frame.CommonNode, isCommonNode: true);
             }
 
             // 添加 Proto JSON 数据节点
             if (frame.PluginNode != null)
             {
                 pluginFileNode.Children.Add(frame.PluginNode);
+                // 建立节点映射
+                RegisterNodeMapping(frame.PluginNode, isCommonNode: false);
+            }
+
+            // 建立对应关系
+            if (frame.CommonNode != null && frame.PluginNode != null)
+            {
+                EstablishNodeCorrespondence(frame.CommonNode, frame.PluginNode);
+            }
+        }
+
+        /// <summary>
+        /// 注册节点到映射表
+        /// </summary>
+        private void RegisterNodeMapping(TreeNodeModel node, bool isCommonNode)
+        {
+            if (!string.IsNullOrEmpty(node.NodeId))
+            {
+                if (isCommonNode)
+                {
+                    _nodeIdToCommonNodeMap[node.NodeId] = node;
+                }
+                else
+                {
+                    _nodeIdToPluginNodeMap[node.NodeId] = node;
+                }
+            }
+
+            // 递归注册子节点
+            foreach (var child in node.Children)
+            {
+                RegisterNodeMapping(child, isCommonNode);
+            }
+        }
+
+        /// <summary>
+        /// 建立节点间的对应关系（递归）
+        /// </summary>
+        private void EstablishNodeCorrespondence(TreeNodeModel commonNode, TreeNodeModel pluginNode)
+        {
+            // 建立直接对应关系
+            if (!string.IsNullOrEmpty(commonNode.NodeId) && commonNode.NodeId == pluginNode.NodeId)
+            {
+                commonNode.EstablishCorrespondence(pluginNode);
+            }
+
+            // 递归处理子节点 - 按照名称匹配
+            var commonChildren = commonNode.Children.ToList();
+            var pluginChildren = pluginNode.Children.ToList();
+
+            foreach (var commonChild in commonChildren)
+            {
+                var correspondingPluginChild = pluginChildren.FirstOrDefault(p => 
+                    p.NodeId == commonChild.NodeId || 
+                    (string.IsNullOrEmpty(commonChild.NodeId) && p.Name == commonChild.Name));
+                
+                if (correspondingPluginChild != null)
+                {
+                    EstablishNodeCorrespondence(commonChild, correspondingPluginChild);
+                }
             }
         }
 
@@ -501,6 +580,8 @@ namespace ProtoMaster
             PluginDataNodes.Clear();
             _commonFileNodeCache.Clear();
             _pluginFileNodeCache.Clear();
+            _nodeIdToCommonNodeMap.Clear();
+            _nodeIdToPluginNodeMap.Clear();
 
             // 清空待处理队列
             while (_pendingFrames.TryDequeue(out _)) { }
@@ -575,17 +656,19 @@ namespace ProtoMaster
         {
             // 在后台线程构建树节点，减轻 UI 线程负担
             string frameName = $"Frame (DataID: {dataId})";
+            string nodeId = $"{fileName}_{dataId}"; // 生成唯一的节点ID
+            
             TreeNodeModel? commonNode = null;
             TreeNodeModel? pluginNode = null;
 
             if (commonData != null)
             {
-                commonNode = TreeNodeBuilder.BuildFromCommonData(commonData, frameName);
+                commonNode = TreeNodeBuilder.BuildFromCommonData(commonData, frameName, nodeId);
             }
 
             if (!string.IsNullOrEmpty(protoJson))
             {
-                pluginNode = TreeNodeBuilder.BuildFromJson(protoJson, frameName);
+                pluginNode = TreeNodeBuilder.BuildFromJson(protoJson, frameName, nodeId);
             }
 
             // 将预构建好的节点加入队列
@@ -621,17 +704,11 @@ namespace ProtoMaster
         private void DarkTheme_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.ApplyTheme(AppTheme.Dark);
-            SetAvalonDockTheme(isDark: true);
-            MenuDarkTheme.IsChecked = true;
-            MenuLightTheme.IsChecked = false;
         }
 
         private void LightTheme_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.ApplyTheme(AppTheme.Light);
-            SetAvalonDockTheme(isDark: false);
-            MenuLightTheme.IsChecked = true;
-            MenuDarkTheme.IsChecked = false;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -669,6 +746,486 @@ namespace ProtoMaster
             {
                 Debug.WriteLine($"Error syncing menu states: {ex.Message}");
             }
+        }
+
+        #region TreeView Utility Methods
+
+        /// <summary>
+        /// 选择并展开指定节点及其父节点路径
+        /// </summary>
+        private void SelectAndExpandNode(TreeView treeView, TreeNodeModel targetNode)
+        {
+            // 获取节点到根的路径
+            var pathToRoot = GetPathToRoot(targetNode);
+            
+            // 从根开始展开路径上的所有节点
+            TreeViewItem? currentContainer = null;
+            
+            for (int i = pathToRoot.Count - 1; i >= 0; i--)
+            {
+                var nodeInPath = pathToRoot[i];
+                
+                if (currentContainer == null)
+                {
+                    // 根节点
+                    currentContainer = treeView.ItemContainerGenerator.ContainerFromItem(nodeInPath) as TreeViewItem;
+                }
+                else
+                {
+                    // 子节点
+                    currentContainer.IsExpanded = true;
+                    currentContainer.UpdateLayout(); // 确保子容器已生成
+                    currentContainer = currentContainer.ItemContainerGenerator.ContainerFromItem(nodeInPath) as TreeViewItem;
+                }
+                
+                if (currentContainer != null)
+                {
+                    currentContainer.IsExpanded = true;
+                    
+                    // 如果这是目标节点，选择它
+                    if (nodeInPath == targetNode)
+                    {
+                        currentContainer.IsSelected = true;
+                        currentContainer.BringIntoView();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取节点到根的路径
+        /// </summary>
+        private List<TreeNodeModel> GetPathToRoot(TreeNodeModel node)
+        {
+            var path = new List<TreeNodeModel>();
+            var current = node;
+            
+            // 添加当前节点
+            path.Add(current);
+            
+            // 查找父节点路径
+            var parentNode = FindParentNode(current);
+            while (parentNode != null)
+            {
+                path.Add(parentNode);
+                parentNode = FindParentNode(parentNode);
+            }
+            
+            return path;
+        }
+
+        /// <summary>
+        /// 查找指定节点的父节点
+        /// </summary>
+        private TreeNodeModel? FindParentNode(TreeNodeModel childNode)
+        {
+            // 在Common数据中查找
+            foreach (var rootNode in CommonDataNodes)
+            {
+                var parent = FindParentNodeRecursive(rootNode, childNode);
+                if (parent != null) return parent;
+            }
+            
+            // 在Plugin数据中查找
+            foreach (var rootNode in PluginDataNodes)
+            {
+                var parent = FindParentNodeRecursive(rootNode, childNode);
+                if (parent != null) return parent;
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// 递归查找父节点
+        /// </summary>
+        private TreeNodeModel? FindParentNodeRecursive(TreeNodeModel currentNode, TreeNodeModel targetChild)
+        {
+            // 检查当前节点的直接子节点
+            foreach (var child in currentNode.Children)
+            {
+                if (child == targetChild)
+                    return currentNode;
+                    
+                // 递归查找
+                var found = FindParentNodeRecursive(child, targetChild);
+                if (found != null)
+                    return found;
+            }
+            
+            return null;
+        }
+
+        #endregion
+
+        #region TreeView Right-Click Context Menu Events
+
+        /// <summary>
+        /// 同步到对应节点
+        /// </summary>
+        private void SyncToCorrespondingNode_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            var contextMenu = menuItem?.Parent as ContextMenu;
+            var treeViewItem = contextMenu?.PlacementTarget as FrameworkElement;
+            
+            Debug.WriteLine($"SyncToCorrespondingNode_Click: menuItem={menuItem?.Header}, PlacementTarget={treeViewItem?.GetType().Name}");
+            
+            // 通过可视化树查找 TreeViewItem
+            while (treeViewItem != null && !(treeViewItem is TreeViewItem))
+            {
+                treeViewItem = treeViewItem.Parent as FrameworkElement;
+                if (treeViewItem == null)
+                {
+                    // 如果Parent为null，尝试使用VisualTreeHelper
+                    if (contextMenu?.PlacementTarget != null)
+                    {
+                        treeViewItem = System.Windows.Media.VisualTreeHelper.GetParent(contextMenu.PlacementTarget) as FrameworkElement;
+                        while (treeViewItem != null && !(treeViewItem is TreeViewItem))
+                        {
+                            treeViewItem = System.Windows.Media.VisualTreeHelper.GetParent(treeViewItem) as FrameworkElement;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            Debug.WriteLine($"Found TreeViewItem: {treeViewItem?.GetType().Name}, DataContext: {(treeViewItem as TreeViewItem)?.DataContext?.GetType().Name}");
+            
+            if (treeViewItem is TreeViewItem item && item.DataContext is TreeNodeModel node)
+            {
+                try
+                {
+                    Debug.WriteLine($"Processing node: '{node.Name}', HasCorrespondingNode: {node.CorrespondingNode != null}");
+                    
+                    if (node.CorrespondingNode != null)
+                    {
+                        // 查找当前节点属于哪个TreeView
+                        var currentTreeView = FindAncestorTreeView(item);
+                        Debug.WriteLine($"Current TreeView: {currentTreeView?.Name ?? "null"}");
+                        
+                        TreeView? targetTreeView = null;
+                        
+                        // 通过名称判断当前TreeView
+                        if (currentTreeView?.Name == "CommonDataTreeView")
+                        {
+                            targetTreeView = this.FindName("PluginDataTreeView") as TreeView;
+                            Debug.WriteLine("Switching from CommonData to PluginData");
+                        }
+                        else if (currentTreeView?.Name == "PluginDataTreeView")
+                        {
+                            targetTreeView = this.FindName("CommonDataTreeView") as TreeView;
+                            Debug.WriteLine("Switching from PluginData to CommonData");
+                        }
+                        else
+                        {
+                            // 如果无法确定当前TreeView，尝试智能推断
+                            Debug.WriteLine("Unable to determine current TreeView, attempting smart inference");
+                            
+                            // 检查节点是否在Common数据中
+                            bool isInCommonData = IsNodeInCollection(node, CommonDataNodes);
+                            bool isInPluginData = IsNodeInCollection(node, PluginDataNodes);
+                            
+                            if (isInCommonData)
+                            {
+                                targetTreeView = this.FindName("PluginDataTreeView") as TreeView;
+                                Debug.WriteLine("Node found in CommonData, targeting PluginData");
+                            }
+                            else if (isInPluginData)
+                            {
+                                targetTreeView = this.FindName("CommonDataTreeView") as TreeView;
+                                Debug.WriteLine("Node found in PluginData, targeting CommonData");
+                            }
+                        }
+                        
+                        Debug.WriteLine($"Target TreeView: {targetTreeView?.Name ?? "null"}");
+                        
+                        if (targetTreeView != null)
+                        {
+                            _isSelectingCorrespondingNode = true;
+                            try
+                            {
+                                // 选择并展开对应节点
+                                SelectAndExpandNode(targetTreeView, node.CorrespondingNode);
+                                StatusBarText.Text = $"已同步到对应节点: '{node.CorrespondingNode.Name}'";
+                                Debug.WriteLine($"Successfully synced to corresponding node: '{node.CorrespondingNode.Name}'");
+                            }
+                            finally
+                            {
+                                _isSelectingCorrespondingNode = false;
+                            }
+                        }
+                        else
+                        {
+                            StatusBarText.Text = "无法确定目标TreeView";
+                            Debug.WriteLine("Unable to determine target TreeView");
+                        }
+                    }
+                    else
+                    {
+                        StatusBarText.Text = $"节点 '{node.Name}' 没有对应节点";
+                        Debug.WriteLine($"Node '{node.Name}' has no corresponding node");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error syncing to corresponding node: {ex.Message}\nStackTrace: {ex.StackTrace}");
+                    StatusBarText.Text = "同步节点时出错";
+                }
+            }
+            else
+            {
+                Debug.WriteLine($"Unable to find TreeViewItem or TreeNodeModel. TreeViewItem: {treeViewItem}, DataContext: {(treeViewItem as TreeViewItem)?.DataContext}");
+                StatusBarText.Text = "无法找到选择的节点";
+            }
+        }
+
+        /// <summary>
+        /// 查找父级TreeView控件 - 改进版，支持模板化和复杂可视化树
+        /// </summary>
+        private TreeView? FindAncestorTreeView(FrameworkElement element)
+        {
+            // 先尝试使用 Parent 属性遍历逻辑树
+            var parent = element.Parent as FrameworkElement;
+            while (parent != null)
+            {
+                if (parent is TreeView treeView)
+                    return treeView;
+                parent = parent.Parent as FrameworkElement;
+            }
+
+            // 如果逻辑树中找不到，使用 VisualTreeHelper 遍历可视化树
+            DependencyObject visualParent = System.Windows.Media.VisualTreeHelper.GetParent(element);
+            while (visualParent != null)
+            {
+                if (visualParent is TreeView visualTreeView)
+                    return visualTreeView;
+                visualParent = System.Windows.Media.VisualTreeHelper.GetParent(visualParent);
+            }
+
+            // 最后尝试直接比较名称（作为备选方案）
+            return TryFindTreeViewByName(element);
+        }
+
+        /// <summary>
+        /// 通过名称查找TreeView（备选方案）
+        /// </summary>
+        private TreeView? TryFindTreeViewByName(FrameworkElement contextElement)
+        {
+            // 如果上下文菜单位于PluginDataTreeView的内容中，直接返回对应的TreeView
+            try
+            {
+                // 检查是否能通过名称找到TreeView
+                var commonTreeView = this.FindName("CommonDataTreeView") as TreeView;
+                var pluginTreeView = this.FindName("PluginDataTreeView") as TreeView;
+
+                // 如果找到了TreeView，检查contextElement是否在其中
+                if (commonTreeView != null && IsElementInTreeView(contextElement, commonTreeView))
+                {
+                    Debug.WriteLine("Found CommonDataTreeView via name lookup");
+                    return commonTreeView;
+                }
+
+                if (pluginTreeView != null && IsElementInTreeView(contextElement, pluginTreeView))
+                {
+                    Debug.WriteLine("Found PluginDataTreeView via name lookup");
+                    return pluginTreeView;
+                }
+
+                // 如果以上都找不到，返回第一个找到的TreeView作为默认值
+                Debug.WriteLine("Fallback: returning CommonDataTreeView as default");
+                return commonTreeView ?? pluginTreeView;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in TryFindTreeViewByName: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 检查元素是否在指定的TreeView中
+        /// </summary>
+        private bool IsElementInTreeView(FrameworkElement element, TreeView treeView)
+        {
+            try
+            {
+                DependencyObject current = element;
+                while (current != null)
+                {
+                    if (ReferenceEquals(current, treeView))
+                        return true;
+                    current = System.Windows.Media.VisualTreeHelper.GetParent(current);
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// 展开所有子节点
+        /// </summary>
+        private void ExpandAllNodes_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            var contextMenu = menuItem?.Parent as ContextMenu;
+            var treeViewItem = contextMenu?.PlacementTarget as FrameworkElement;
+            
+            // 通过可视化树查找 TreeViewItem
+            while (treeViewItem != null && !(treeViewItem is TreeViewItem))
+            {
+                treeViewItem = treeViewItem.Parent as FrameworkElement;
+            }
+            
+            if (treeViewItem is TreeViewItem item && item.DataContext is TreeNodeModel node)
+            {
+                try
+                {
+                    node.ExpandAll();
+                    StatusBarText.Text = $"已展开 '{node.Name}' 的所有子节点";
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error expanding all nodes: {ex.Message}");
+                    StatusBarText.Text = "展开节点时出错";
+                }
+            }
+        }
+
+        /// <summary>
+        /// 折叠所有子节点
+        /// </summary>
+        private void CollapseAllNodes_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            var contextMenu = menuItem?.Parent as ContextMenu;
+            var treeViewItem = contextMenu?.PlacementTarget as FrameworkElement;
+            
+            // 通过可视化树查找 TreeViewItem
+            while (treeViewItem != null && !(treeViewItem is TreeViewItem))
+            {
+                treeViewItem = treeViewItem.Parent as FrameworkElement;
+            }
+            
+            if (treeViewItem is TreeViewItem item && item.DataContext is TreeNodeModel node)
+            {
+                try
+                {
+                    node.CollapseAll();
+                    StatusBarText.Text = $"已折叠 '{node.Name}' 的所有子节点";
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error collapsing all nodes: {ex.Message}");
+                    StatusBarText.Text = "折叠节点时出错";
+                }
+            }
+        }
+
+        /// <summary>
+        /// 复制节点数据为JSON格式
+        /// </summary>
+        private void CopyNodeAsJson_Click(object sender, RoutedEventArgs e)
+        {
+            var menuItem = sender as MenuItem;
+            var contextMenu = menuItem?.Parent as ContextMenu;
+            var treeViewItem = contextMenu?.PlacementTarget as FrameworkElement;
+            
+            // 通过可视化树查找 TreeViewItem
+            while (treeViewItem != null && !(treeViewItem is TreeViewItem))
+            {
+                treeViewItem = treeViewItem.Parent as FrameworkElement;
+            }
+            
+            if (treeViewItem is TreeViewItem item && item.DataContext is TreeNodeModel node)
+            {
+                try
+                {
+                    var json = node.ToJson(indented: true);
+                    Clipboard.SetText(json);
+                    StatusBarText.Text = $"已复制 '{node.Name}' 节点数据到剪贴板 ({json.Length} 字符)";
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error copying node as JSON: {ex.Message}");
+                    StatusBarText.Text = "复制节点数据时出错";
+                    MessageBox.Show($"复制节点数据时出错: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+        }
+
+        /// <summary>
+        /// PluginDataTreeView选择项变化事件处理程序
+        /// </summary>
+        private void PluginDataTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            // 防止递归触发
+            if (_isSelectingCorrespondingNode)
+                return;
+
+            if (e.NewValue is TreeNodeModel selectedNode)
+            {
+                try
+                {
+                    // 如果当前选择的节点有对应节点，可以实现自动同步功能
+                    if (selectedNode.CorrespondingNode != null)
+                    {
+                        // 这里可以添加自动同步逻辑，比如高亮对应节点
+                        // 或者在状态栏显示对应节点信息
+                        StatusBarText.Text = $"选择节点: '{selectedNode.Name}' (有对应节点: '{selectedNode.CorrespondingNode.Name}')";
+                    }
+                    else
+                    {
+                        StatusBarText.Text = $"选择节点: '{selectedNode.Name}' (无对应节点)";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error in PluginDataTreeView_SelectedItemChanged: {ex.Message}");
+                    StatusBarText.Text = "处理选择项变化时出错";
+                }
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 判断节点是否属于指定集合（递归查找）
+        /// </summary>
+        private bool IsNodeInCollection(TreeNodeModel node, ObservableCollection<TreeNodeModel> collection)
+        {
+            foreach (var root in collection)
+            {
+                if (IsNodeInSubtree(node, root))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 判断节点是否在以root为根的子树中
+        /// </summary>
+        private bool IsNodeInSubtree(TreeNodeModel target, TreeNodeModel root)
+        {
+            if (ReferenceEquals(target, root))
+                return true;
+            foreach (var child in root.Children)
+            {
+                if (IsNodeInSubtree(target, child))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 设置面板相关事件处理程序（如有需要可扩展）
+        /// </summary>
+        private void SetupPanelEventHandlers()
+        {
+            // 示例：可在此注册面板的事件监听，如 IsVisibleChanged、IsActiveChanged 等
         }
     }
 }
